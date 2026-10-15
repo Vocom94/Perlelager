@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7a1f7d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Perlelager">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Perlelager</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: én kolonne for mobil — sammendrag øverst, filtre, perlerutenett; fast fanelinje nederst og bunnark for detaljer */
+:root{
+  --bg:#f7f3f8; --surface:#ffffff; --ink:#241a27; --muted:#6f6275; --line:#e6dde9; --chip:#efe7f2;
+  --accent:#7a1f7d; --accent-ink:#ffffff; --accent-soft:#f3e3f4;
+  --warn:#c2410c; --warn-soft:#fde8dc; --ok:#15803d;
+  --shadow:0 1px 2px rgba(36,26,39,.08),0 6px 20px rgba(36,26,39,.08);
+  --f-display:"Bricolage Grotesque",system-ui,sans-serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --tabh:64px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141016; --surface:#211a24; --ink:#f2ebf4; --muted:#a698ab; --line:#3a2f3f; --chip:#2b2230;
+  --accent:#d985dc; --accent-ink:#1b0e1d; --accent-soft:#3a2440;
+  --warn:#fb8a4c; --warn-soft:#3d2218; --ok:#4ade80;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141016; --surface:#211a24; --ink:#f2ebf4; --muted:#a698ab; --line:#3a2f3f; --chip:#2b2230;
+  --accent:#d985dc; --accent-ink:#1b0e1d; --accent-soft:#3a2440;
+  --warn:#fb8a4c; --warn-soft:#3d2218; --ok:#4ade80;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px calc(var(--tabh) + env(safe-area-inset-bottom,0px) + 24px);max-width:760px;margin:0 auto}
+h1,h2{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:1.85rem;font-weight:800}
+h2{font-size:1.25rem;font-weight:800}
+.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+/* Sammendrag */
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.stats{display:flex;gap:18px;margin-top:10px;flex-wrap:wrap}
+.stat b{display:block;font-family:var(--f-display);font-size:1.3rem;font-weight:800;font-variant-numeric:tabular-nums}
+.stat span{font-size:.78rem;color:var(--muted)}
+.stat.warn b{color:var(--warn)}
+
+/* Kontroller */
+.controls{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);display:flex;flex-direction:column;gap:10px;padding-block:12px 10px;margin-top:6px}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 12px;height:44px}
+.search input{border:0;background:transparent;outline:0;flex:1;min-width:0;font-size:16px}
+.search svg{flex:none;color:var(--muted)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:-2px;padding:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 13px;font-size:.88rem;font-weight:600;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip.small{padding:4px 11px;font-size:.8rem}
+.huerow{display:flex;align-items:center;gap:10px}
+.hue{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:14px;border-radius:999px;background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);outline-offset:4px}
+.hue.off{opacity:.45}
+.hue::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--thumb,#fff);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.hue::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--thumb,#fff);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.toolrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.toolrow .grow{flex:1}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:6px 10px;display:grid;place-items:center;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 8px;font-size:.88rem}
+.toggle{display:flex;align-items:center;gap:7px;font-size:.88rem;font-weight:600;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px}
+.toggle[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+/* Perler */
+.bead{--c:#ccc;width:100%;aspect-ratio:1;max-width:100%;border-radius:50%;background:
+  radial-gradient(circle at 50% 50%,var(--bg) 0 21%,rgba(0,0,0,.28) 22%,transparent 27%),
+  radial-gradient(circle at 34% 30%,rgba(255,255,255,.55),transparent 42%),
+  var(--c);box-shadow:inset 0 -3px 6px rgba(0,0,0,.22),inset 0 0 0 1px rgba(0,0,0,.08)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:14px 10px;margin-top:4px}
+.tile{border:0;background:transparent;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;text-align:center;min-width:0}
+.tile .bead{width:62px}
+.tile .code{font-weight:700;font-size:.85rem;font-variant-numeric:tabular-nums}
+.tile .cnt{font-size:.74rem;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1}
+.tile .badge{position:absolute;top:-4px;left:50%;transform:translateX(4px);background:var(--accent);color:var(--accent-ink);font-size:.68rem;font-weight:700;padding:2px 6px;border-radius:999px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tile.low .badge{background:var(--warn);color:#fff}
+.tile.untracked .bead{opacity:.55}
+.tile.shop::after{content:"";position:absolute;top:0;right:calc(50% - 34px);width:10px;height:10px;border-radius:50%;background:var(--warn);border:2px solid var(--bg)}
+.list{display:flex;flex-direction:column;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:9px 12px;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left;width:100%}
+.row:last-child{border-bottom:0}
+.row .bead{width:36px;flex:none}
+.row .info{flex:1;min-width:0}
+.row .info b{display:block;font-size:.95rem}
+.row .info span{font-size:.8rem;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .right{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.row .right small{display:block;font-weight:500;color:var(--muted);font-size:.74rem}
+.row.low .right{color:var(--warn)}
+.empty{padding:36px 12px;text-align:center;color:var(--muted)}
+.group-h{margin:18px 2px 8px;display:flex;justify-content:space-between;align-items:baseline}
+
+/* Fanelinje */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);display:flex;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs button{flex:1;border:0;background:transparent;height:var(--tabh);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.74rem;font-weight:600;color:var(--muted);position:relative}
+.tabs button[aria-selected="true"]{color:var(--accent)}
+.tabs .dot{position:absolute;top:8px;left:calc(50% + 6px);background:var(--warn);color:#fff;border-radius:999px;font-size:.65rem;padding:1px 6px;font-variant-numeric:tabular-nums}
+
+/* Bunnark */
+.scrim{position:fixed;inset:0;background:rgba(10,5,12,.45);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--surface);border-radius:20px 20px 0 0;box-shadow:var(--shadow);transform:translateY(105%);transition:transform .25s ease;max-height:88vh;overflow-y:auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-block:10px calc(20px + env(safe-area-inset-bottom,0px));max-width:760px;margin:0 auto}
+.sheet.on{transform:none}
+.grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 12px}
+.sh-head{display:flex;gap:14px;align-items:center}
+.sh-head .bead{width:72px;flex:none}
+.sh-head h2{font-size:1.4rem}
+.big{font-family:var(--f-display);font-weight:800;font-size:2.6rem;text-align:center;font-variant-numeric:tabular-nums;line-height:1.1;margin-top:14px}
+.big small{display:block;font-family:var(--f-body);font-size:.8rem;font-weight:500;color:var(--muted)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.steps button{border:1px solid var(--line);background:var(--chip);border-radius:12px;padding:11px 0;font-weight:700;font-variant-numeric:tabular-nums}
+.steps button.plus{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.field{display:flex;flex-direction:column;gap:5px;margin-top:14px}
+.field label{font-size:.82rem;font-weight:600;color:var(--muted)}
+.inp{border:1px solid var(--line);background:var(--bg);border-radius:11px;padding:10px 12px;font-size:16px;width:100%;min-width:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--warn);border-color:var(--warn)}
+.btn.danger.armed{background:var(--warn);color:#fff}
+.btn.block{width:100%}
+.btnrow{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.btnrow .btn{flex:1}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line);width:100%;text-align:left;font-weight:600}
+.switch i{width:44px;height:26px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.switch i::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.switch[aria-checked="true"] i{background:var(--accent)}
+.switch[aria-checked="true"] i::after{transform:translateX(18px)}
+
+/* Handleliste / innstillinger */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
+.card h2{font-size:1.05rem;margin-bottom:4px}
+.card p{margin:4px 0 0;color:var(--muted);font-size:.88rem}
+.buyrow{display:flex;align-items:center;gap:8px;margin-top:8px}
+.buyrow .inp{width:82px;padding:7px 8px}
+.shop .info span{white-space:normal}
+textarea.inp{min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.toast{position:fixed;left:50%;bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px) + 14px);transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-weight:600;font-size:.88rem;opacity:0;transition:.2s;z-index:70;pointer-events:none;max-width:calc(100% - 32px);width:max-content;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.colorpick{display:flex;gap:10px;align-items:center}
+.colorpick input[type=color]{width:52px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<main class="wrap" id="app">
+  <section id="v-lager">
+    <div class="top">
+      <div><div class="eyebrow">Mitt perlelager</div><h1>Perlelager</h1></div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="controls">
+      <label class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Søk nummer eller navn …" autocomplete="off" aria-label="Søk farger"></label>
+      <div class="chips" id="brands" role="group" aria-label="Merke"></div>
+      <div class="chips" id="sizes" role="group" aria-label="Størrelse"></div>
+      <div class="huerow">
+        <input id="hue" class="hue off" type="range" min="0" max="359" value="200" aria-label="Fargetone">
+        <button class="chip small" id="hueAll" aria-pressed="true">Alle farger</button>
+      </div>
+      <div class="toolrow">
+        <button class="toggle" id="mine" aria-pressed="false">Bare de jeg har</button>
+        <span class="grow"></span>
+        <select id="sort" aria-label="Sortering">
+          <option value="num">Nummer</option><option value="hue">Fargetone</option><option value="cnt">Antall</option>
+        </select>
+        <div class="seg" role="group" aria-label="Visning">
+          <button id="vGrid" aria-label="Rutenett" aria-pressed="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/></svg></button>
+          <button id="vList" aria-label="Liste" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div id="out"></div>
+  </section>
+
+  <section id="v-handle" hidden>
+    <div class="eyebrow">Det som må kjøpes</div><h1>Handleliste</h1>
+    <p class="muted" style="margin:6px 0 0">Farger under grensen havner her automatisk. Du kan også legge til farger selv fra fargekortet.</p>
+    <div class="btnrow"><button class="btn" id="copyList">Kopier listen</button></div>
+    <div id="shopOut"></div>
+  </section>
+
+  <section id="v-inst" hidden>
+    <div class="eyebrow">Oppsett og sikkerhetskopi</div><h1>Innstillinger</h1>
+
+    <div class="card">
+      <h2>Standard bestillingsgrense</h2>
+      <p>Når du har færre perler enn dette av en farge, havner den på handlelisten. Du kan overstyre grensen per farge.</p>
+      <div class="field"><input class="inp num" id="defLimit" type="number" inputmode="numeric" min="0" step="50"></div>
+    </div>
+
+    <div class="card">
+      <h2>Legg til egen farge</h2>
+      <p>For merker som mangler, for eksempel Panduro, eller spesialfarger.</p>
+      <div class="two">
+        <div class="field"><label for="cBrand">Merke</label><input class="inp" id="cBrand" list="brandList" placeholder="Panduro"></div>
+        <div class="field"><label for="cSize">Størrelse</label><select class="inp" id="cSize"><option>Midi</option><option>Mini</option><option>Maxi</option></select></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="cNum">Nummer</label><input class="inp" id="cNum" placeholder="12"></div>
+        <div class="field"><label for="cName">Navn</label><input class="inp" id="cName" placeholder="Brun"></div>
+      </div>
+      <div class="field"><label for="cHex">Farge</label><div class="colorpick"><input type="color" id="cHex" value="#7a4a2a"><span class="muted" id="cHexTxt">#7a4a2a</span></div></div>
+      <div class="btnrow"><button class="btn primary" id="cAdd">Legg til farge</button></div>
+      <datalist id="brandList"></datalist>
+      <div id="customList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Sikkerhetskopi</h2>
+      <p>Lageret lagres bare på denne telefonen. Ta en kopi av og til, særlig før du sletter appen eller bytter telefon.</p>
+      <div class="btnrow"><button class="btn" id="expDl">Last ned fil</button><button class="btn" id="expCopy">Kopier som tekst</button></div>
+      <div class="field"><label for="impFile">Gjenopprett fra fil</label><input class="inp" id="impFile" type="file" accept=".json,application/json"></div>
+      <div class="field"><label for="impTxt">… eller lim inn tekst</label><textarea class="inp" id="impTxt" placeholder='{"stock":{…}}'></textarea></div>
+      <div class="btnrow"><button class="btn" id="impGo">Gjenopprett fra tekst</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Nullstill</h2>
+      <p>Sletter alle antall, grenser, handleliste og egne farger på denne telefonen.</p>
+      <div class="btnrow"><button class="btn danger" id="reset">Nullstill lageret</button></div>
+    </div>
+    <p class="muted" style="font-size:.78rem;margin-top:18px">Fargedata for Hama, Artkal, Perler og Nabbi er hentet fra det åpne prosjektet beadcolors. Fargene på skjermen er omtrentlige.</p>
+  </section>
+</main>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-tab="lager" aria-selected="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="3.2"/><circle cx="17" cy="7" r="3.2"/><circle cx="7" cy="17" r="3.2"/><circle cx="17" cy="17" r="3.2"/></svg>Lager</button>
+  <button role="tab" data-tab="handle" aria-selected="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 4h2l2.4 11h10.2L20 8H6.2"/><circle cx="9" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/></svg>Handleliste<span class="dot" id="shopDot" hidden></span></button>
+  <button role="tab" data-tab="inst" aria-selected="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Innstillinger</button>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle"></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const PAL = [["Hama","Midi","01","White","e5ecf1"],["Hama","Midi","02","Cream","e4e4c5"],["Hama","Midi","03","Yellow","e9c704"],["Hama","Midi","04","Orange","d14803"],["Hama","Midi","05","Red","b4060e"],["Hama","Midi","06","Pink","ea8aa5"],["Hama","Midi","07","Purple","712297"],["Hama","Midi","08","Blue","0239a3"],["Hama","Midi","09","Light Blue","025bc3"],["Hama","Midi","10","Green","027643"],["Hama","Midi","11","Light Green","19cda7"],["Hama","Midi","12","Brown","3e271a"],["Hama","Midi","13","Transparent Red","c02435"],["Hama","Midi","14","Transparent Yellow","e4aa32"],["Hama","Midi","16","Transparent Green","37b876"],["Hama","Midi","17","Grey","838f98"],["Hama","Midi","18","Black","141315"],["Hama","Midi","19","Clear","d8d2ce"],["Hama","Midi","20","Reddish Brown","8d2a0f"],["Hama","Midi","21","Light Brown","be6c21"],["Hama","Midi","22","Dark Red","91020a"],["Hama","Midi","24","Translucent Purple","683e9a"],["Hama","Midi","25","Translucent Brown","87593d"],["Hama","Midi","26","Matt Rose","e8a498"],["Hama","Midi","27","Beige","dcb18e"],["Hama","Midi","28","Dark Green","1e2c1c"],["Hama","Midi","29","Claret","bf0142"],["Hama","Midi","30","Burgundy","4e0c1b"],["Hama","Midi","31","Turquoise","489ab9"],["Hama","Midi","32","Neon Fuchsia","ff208d"],["Hama","Midi","33","Cerise","ff3956"],["Hama","Midi","34","Neon Yellow","e5ef13"],["Hama","Midi","35","Neon Red","ff2833"],["Hama","Midi","36","Neon Blue","2353b0"],["Hama","Midi","37","Neon Green","06b73c"],["Hama","Midi","38","Neon Orange","fd8600"],["Hama","Midi","39","Fluorescent Yellow","f1f21c"],["Hama","Midi","40","Fluorescent Orange","fe630b"],["Hama","Midi","41","Fluorescent Blue","2659b2"],["Hama","Midi","42","Fluorescent Green","0cbd51"],["Hama","Midi","43","Pastel Yellow","e7e45a"],["Hama","Midi","44","Pastel Red","f96160"],["Hama","Midi","45","Pastel Purple","8e69cd"],["Hama","Midi","46","Pastel Blue","51aee4"],["Hama","Midi","47","Pastel Green","80df96"],["Hama","Midi","48","Pastel Pink","d67ad1"],["Hama","Midi","49","Azure","0facd1"],["Hama","Midi","60","Teddybear Brown","f0981e"],["Hama","Midi","70","Light Grey","a5b3c0"],["Hama","Midi","71","Dark Grey","445059"],["Hama","Midi","75","Tan","b78c6d"],["Hama","Midi","76","Nougat","8a5937"],["Hama","Midi","77","Cloudy White","ced1c8"],["Hama","Midi","78","Light Peach","f7c1aa"],["Hama","Midi","79","Apricot","f87633"],["Hama","Midi","82","Plum","91175a"],["Hama","Midi","83","Petrol Blue","037a9f"],["Hama","Midi","84","Olive Green","687836"],["Hama","Midi","95","Pastel Rose","dd9ba3"],["Hama","Midi","96","Pastel Lilac","b491ad"],["Hama","Midi","97","Pastel Ice Blue","8aafc2"],["Hama","Midi","98","Pastel Mint","94cca4"],["Hama","Midi","15","Transparent Blue","487ed5"],["Hama","Midi","55","Green (Glow in the Dark)","faf8ed"],["Hama","Midi","56","Red (Glow in the Dark)","edbf9f"],["Hama","Midi","57","Blue (Glow in the Dark)","c4d0e3"],["Hama","Midi","61","Gold","d99350"],["Hama","Midi","62","Silver","48474a"],["Hama","Midi","63","Bronze","42312f"],["Hama","Midi","64","Pearl","efebe4"],["Hama","Midi","72","Translucent Pink","f097b0"],["Hama","Midi","73","Translucent Aqua","59aef5"],["Hama","Midi","74","Translucent Lilac","5b55bd"],["Hama","Midi","101","Eucalyptus","a9c39b"],["Hama","Midi","102","Forest Green","356b2d"],["Hama","Midi","103","Light Yellow","ffe660"],["Hama","Midi","104","Lime","bcd122"],["Hama","Midi","105","Light Apricot","ffac78"],["Hama","Midi","106","Light Lavender","ccc5ed"],["Hama","Midi","107","Lavender","6a87c1"],["Hama","Midi","108","Aubergine","2a2536"],["Hama","Midi","109","Cloudy Grey","8a847f"],["Hama","Midi","110","Matcha","838956"],["Hama","Midi","111","Dark Blush","835854"],["Hama","Midi","112","Blush","ad8a82"],["Hama","Midi","113","Aqua","5f887b"],["Hama","Midi","114","Cherry Red","9a2c31"],["Hama","Midi","115","Bright Green","6e975f"],["Hama","Midi","116","Midnight Blue","222838"],["Hama","Midi","117","Taupe Grey","777169"],["Hama","Midi","118","Maroon Red","612932"],["Hama","Midi","119","Sky Blue","4167b4"],["Hama","Mini","01","White","e5ecf1"],["Hama","Mini","02","Cream","e4e4c5"],["Hama","Mini","03","Yellow","e9c704"],["Hama","Mini","04","Orange","d14803"],["Hama","Mini","05","Red","b4060e"],["Hama","Mini","06","Pink","ea8aa5"],["Hama","Mini","07","Purple","712297"],["Hama","Mini","08","Blue","0239a3"],["Hama","Mini","09","Light Blue","025bc3"],["Hama","Mini","10","Green","027643"],["Hama","Mini","11","Light Green","19cda7"],["Hama","Mini","12","Brown","3e271a"],["Hama","Mini","13","Transparent Red","c02435"],["Hama","Mini","14","Transparent Yellow","e4aa32"],["Hama","Mini","15","Transparent Blue","487ed5"],["Hama","Mini","16","Transparent Green","37b876"],["Hama","Mini","17","Grey","838f98"],["Hama","Mini","18","Black","141315"],["Hama","Mini","19","Clear","d8d2ce"],["Hama","Mini","20","Reddish Brown","8d2a0f"],["Hama","Mini","21","Light Brown","be6c21"],["Hama","Mini","22","Dark Red","91020a"],["Hama","Mini","24","Translucent Purple","683e9a"],["Hama","Mini","26","Matt Rose","e8a498"],["Hama","Mini","27","Beige","dcb18e"],["Hama","Mini","28","Dark Green","1e2c1c"],["Hama","Mini","29","Claret","bf0142"],["Hama","Mini","30","Burgundy","4e0c1b"],["Hama","Mini","31","Turquoise","489ab9"],["Hama","Mini","32","Neon Fuchsia","ff208d"],["Hama","Mini","33","Cerise","ff3956"],["Hama","Mini","34","Neon Yellow","e5ef13"],["Hama","Mini","35","Neon Red","ff2833"],["Hama","Mini","36","Neon Blue","2353b0"],["Hama","Mini","37","Neon Green","06b73c"],["Hama","Mini","38","Neon Orange","fd8600"],["Hama","Mini","42","Fluorescent Green","0cbd51"],["Hama","Mini","43","Pastel Yellow","e7e45a"],["Hama","Mini","44","Pastel Red","f96160"],["Hama","Mini","45","Pastel Purple","8e69cd"],["Hama","Mini","46","Pastel Blue","51aee4"],["Hama","Mini","47","Pastel Green","80df96"],["Hama","Mini","48","Pastel Pink","d67ad1"],["Hama","Mini","49","Azure","0facd1"],["Hama","Mini","60","Teddybear Brown","f0981e"],["Hama","Mini","70","Light Grey","a5b3c0"],["Hama","Mini","71","Dark Grey","445059"],["Hama","Mini","75","Tan","b78c6d"],["Hama","Mini","76","Nougat","8a5937"],["Hama","Mini","77","Cloudy White","ced1c8"],["Hama","Mini","78","Light Peach","f7c1aa"],["Hama","Mini","79","Apricot","f87633"],["Hama","Mini","82","Plum","91175a"],["Hama","Mini","83","Petrol Blue","037a9f"],["Hama","Mini","84","Olive Green","687836"],["Hama","Mini","95","Pastel Rose","dd9ba3"],["Hama","Mini","96","Pastel Lilac","b491ad"],["Hama","Mini","97","Pastel Ice Blue","8aafc2"],["Hama","Mini","98","Pastel Mint","94cca4"],["Hama","Mini","101","Eucalyptus","a9c39b"],["Hama","Mini","102","Forest Green","356b2d"],["Hama","Mini","103","Light Yellow","ffe660"],["Hama","Mini","104","Lime","bcd122"],["Hama","Mini","105","Light Apricot","ffac78"],["Hama","Mini","106","Light Lavender","ccc5ed"],["Hama","Mini","107","Lavender","6a87c1"],["Hama","Mini","108","Aubergine","2a2536"],["Hama","Mini","109","Cloudy Grey","8a847f"],["Hama","Mini","110","Matcha","838956"],["Hama","Mini","111","Dark Blush","835854"],["Hama","Mini","112","Blush","ad8a82"],["Hama","Mini","113","Aqua","5f887b"],["Hama","Mini","114","Cherry Red","9a2c31"],["Hama","Mini","115","Bright Green","6e975f"],["Hama","Mini","116","Midnight Blue","222838"],["Hama","Mini","117","Taupe Grey","777169"],["Hama","Mini","118","Maroon Red","612932"],["Hama","Mini","119","Sky Blue","4167b4"],["Hama","Maxi","01","White","e5ecf1"],["Hama","Maxi","03","Yellow","e9c704"],["Hama","Maxi","05","Red","b4060e"],["Hama","Maxi","07","Purple","712297"],["Hama","Maxi","09","Light Blue","025bc3"],["Hama","Maxi","10","Green","027643"],["Hama","Maxi","17","Grey","838f98"],["Hama","Maxi","18","Black","141315"],["Hama","Maxi","20","Reddish Brown","8d2a0f"],["Hama","Maxi","26","Matt Rose","e8a498"],["Hama","Maxi","32","Neon Fuchsia","ff208d"],["Hama","Maxi","34","Neon Yellow","e5ef13"],["Hama","Maxi","35","Neon Red","ff2833"],["Hama","Maxi","36","Neon Blue","2353b0"],["Hama","Maxi","37","Neon Green","06b73c"],["Hama","Maxi","38","Neon Orange","fd8600"],["Hama","Maxi","43","Pastel Yellow","e7e45a"],["Hama","Maxi","44","Pastel Red","f96160"],["Hama","Maxi","45","Pastel Purple","8e69cd"],["Hama","Maxi","46","Pastel Blue","51aee4"],["Hama","Maxi","47","Pastel Green","80df96"],["Hama","Maxi","48","Pastel Pink","d67ad1"],["Hama","Maxi","60","Teddybear Brown","f0981e"],["Hama","Maxi","70","Light Grey","a5b3c0"],["Hama","Maxi","79","Apricot","f87633"],["Artkal","Midi","S01","White","eaeef3"],["Artkal","Midi","S02","Burning Sand","ee927c"],["Artkal","Midi","S03","Tangerine","ffa630"],["Artkal","Midi","S04","Orange","eb6027"],["Artkal","Midi","S05","Tall Poppy","cb3531"],["Artkal","Midi","S06","Raspberry Pink","ef67b2"],["Artkal","Midi","S07","Gray","959698"],["Artkal","Midi","S08","Emerald","1fc467"],["Artkal","Midi","S09","Dark Green","00685e"],["Artkal","Midi","S10","Baby Blue","2eabd8"],["Artkal","Midi","S11","Dark Blue","004fa4"],["Artkal","Midi","S12","Pastel Lavender","9165b2"],["Artkal","Midi","S13","Black","292a2b"],["Artkal","Midi","S14","Sandstorm","e1c835"],["Artkal","Midi","S15","Redwood","9a4541"],["Artkal","Midi","S16","Brown","65463d"],["Artkal","Midi","S17","Light Brown","895d49"],["Artkal","Midi","S18","Sand","dca384"],["Artkal","Midi","S19","Bubble Gun","f2bfb8"],["Artkal","Midi","S20","Green","009053"],["Artkal","Midi","S21","Pastel Green","8bb23a"],["Artkal","Midi","S22","Purple","48337e"],["Artkal","Midi","S23","Royal Purple","644fa4"],["Artkal","Midi","S24","True Blue","0078bf"],["Artkal","Midi","S25","Hot Pink","dc519a"],["Artkal","Midi","S26","Magenta","da4383"],["Artkal","Midi","S27","Yellow","eac125"],["Artkal","Midi","S28","Lily Pink","dda1cc"],["Artkal","Midi","S29","Pastel Yellow","e1d367"],["Artkal","Midi","S30","Shadow Green","9ec9cd"],["Artkal","Midi","S31","Sea Mist","b2d7ce"],["Artkal","Midi","S32","Beeswax","eed39e"],["Artkal","Midi","S33","Maverick","c0b7d7"],["Artkal","Midi","S34","Red","b61927"],["Artkal","Midi","S35","Mona Lisa","e1ccd2"],["Artkal","Midi","S36","Old Pink","ce6d83"],["Artkal","Midi","S37","Blue-Green","60bfcb"],["Artkal","Midi","S38","Burgundy","a3134a"],["Artkal","Midi","S39","Yellow Orange","e68739"],["Artkal","Midi","S40","Carnation Pink","e182b0"],["Artkal","Midi","S41","Copper","9d5b2e"],["Artkal","Midi","S42","Silver","676b73"],["Artkal","Midi","S43","Dark Gray","70757b"],["Artkal","Midi","S44","Sky Blue","a7cdde"],["Artkal","Midi","S45","Medium Turquoise","00a5a1"],["Artkal","Midi","S46","Bright Green","8ec324"],["Artkal","Midi","S47","Marigold","b27938"],["Artkal","Midi","S48","Corn","ecc03d"],["Artkal","Midi","S49","Mulberry Wood","921e5d"],["Artkal","Midi","S50","Mandys Pink","e2a488"],["Artkal","Midi","S51","Spring Sun","dfdabd"],["Artkal","Midi","S52","Picasso","eade7f"],["Artkal","Midi","S53","Turquoise","55a4d9"],["Artkal","Midi","S54","Light Blue","0084ce"],["Artkal","Midi","S55","Pistachio","97cf87"],["Artkal","Midi","S56","Bright Carrot","f96f40"],["Artkal","Midi","S57","Buccaneer","b35540"],["Artkal","Midi","S58","Paprika","b11836"],["Artkal","Midi","S59","Butterfly Bush","4f3989"],["Artkal","Midi","S60","Lavender","8a7ec2"],["Artkal","Midi","S61","Key Lomen Pie","cdc03f"],["Artkal","Midi","S62","Green Tea","00765f"],["Artkal","Midi","S63","Metallic Gold","696046"],["Artkal","Midi","S64","Black Rock","36384d"],["Artkal","Midi","S65","Canary","e2e65d"],["Artkal","Midi","S66","Blaze Orange","e5533c"],["Artkal","Midi","S67","Vanilla","e9c1a6"],["Artkal","Midi","S68","Tan","cc9b74"],["Artkal","Midi","S69","Mine Shaft","383e44"],["Artkal","Midi","S70","Drark Algae","adad29"],["Artkal","Midi","S71","Jade Green","007d2b"],["Artkal","Midi","S72","Light Sea Blue","68c4d2"],["Artkal","Midi","S73","Steel Blue","5ab0bf"],["Artkal","Midi","S74","Azure","009ec2"],["Artkal","Midi","S75","Dark Steel Blue","0084b2"],["Artkal","Midi","S76","Sea Blue","0093a9"],["Artkal","Midi","S77","Ghost While","d4d8d3"],["Artkal","Midi","S78","Ash Grey","c2c4c2"],["Artkal","Midi","S79","Light Gray","a7acad"],["Artkal","Midi","S80","Dark Olive","8f8e3c"],["Artkal","Midi","S81","Deer","bf9168"],["Artkal","Midi","S82","Clay","aa744e"],["Artkal","Midi","S83","Sienna","bb6833"],["Artkal","Midi","S84","Deep Chestnut","be5d65"],["Artkal","Midi","S85","Red Wine","99323a"],["Artkal","Midi","S86","Goldenrod","e8ae00"],["Artkal","Midi","S87","Coral Red","ec625e"],["Artkal","Midi","S88","Dark Pink","d62779"],["Artkal","Midi","S89","Charcoal Gray","565a5e"],["Artkal","Midi","S90","Pastel Orange","d9b35e"],["Artkal","Midi","S91","Brunswick Green","153838"],["Artkal","Midi","S92","Dandelion","cea433"],["Artkal","Midi","S93","Pale Skin","dcb794"],["Artkal","Midi","S94","Warm Blush","dd9285"],["Artkal","Midi","S95","Salmon","e07b69"],["Artkal","Midi","S96","Apricot","ef7f61"],["Artkal","Midi","S97","Papaya","dc772b"],["Artkal","Midi","S98","Himalaya Blue","6aaedb"],["Artkal","Midi","S99","Waterfall","61bbd3"],["Artkal","Midi","S100","Lagoon","279bbe"],["Artkal","Midi","S101","Electric Blue","00a7e3"],["Artkal","Midi","S102","Pool Blue","0077ca"],["Artkal","Midi","S103","Caribbian Blue","005aa9"],["Artkal","Midi","S104","Deep Water","007f9e"],["Artkal","Midi","S105","Petrol Blue","007d91"],["Artkal","Midi","S106","Wegdewood Blue","00649a"],["Artkal","Midi","S107","Pond Blue","006c9f"],["Artkal","Midi","S108","Seashell Beige","cfc179"],["Artkal","Midi","S109","Beige","c4ae64"],["Artkal","Midi","S110","Beach Beige","ab9745"],["Artkal","Midi","S111","Caffe Latt\u00e9","978138"],["Artkal","Midi","S112","Oaktree Brown","907c41"],["Artkal","Midi","S113","Khaki","b6ae84"],["Artkal","Midi","S114","Light Greengray","a59f65"],["Artkal","Midi","S115","Mossy Green","938d54"],["Artkal","Midi","S116","Earth Green","8d8b51"],["Artkal","Midi","S117","Sage Green","7f7e49"],["Artkal","Midi","S118","Pinetree Green","5b6e35"],["Artkal","Midi","S119","Frosty Blue","8ad5c9"],["Artkal","Midi","S120","Polar Mint","7cd2a5"],["Artkal","Midi","S121","Celadon Green","72ac9a"],["Artkal","Midi","S122","Eucalyptus","00b26f"],["Artkal","Midi","S123","Clover Field","3eb724"],["Artkal","Midi","S124","Pooltable Felt","0d7535"],["Artkal","Midi","S125","Snake Green","007d6e"],["Artkal","Midi","S126","Dark Eucalyptus","006e69"],["Artkal","Midi","S127","Marsmallow Rose","dfc3e1"],["Artkal","Midi","S128","Light Grape","d38ed4"],["Artkal","Midi","S129","Rosebud Pink","d5a6ba"],["Artkal","Midi","S130","Fuschia","d6668e"],["Artkal","Midi","S131","Candy Violet","b8aad9"],["Artkal","Midi","S132","Flamingo","df486d"],["Artkal","Midi","S133","Pink Plum","bc3ca6"],["Artkal","Midi","S134","Amethyst","803897"],["Artkal","Midi","S135","Moonlight Blue","a7bae1"],["Artkal","Midi","S136","Summer Rain","afb8df"],["Artkal","Midi","S137","Azur Blue","6b9ad4"],["Artkal","Midi","S138","Cornflower Blue","5a89ce"],["Artkal","Midi","S139","Forget Me Not","658ad0"],["Artkal","Midi","S140","Indigo","566cbd"],["Artkal","Midi","S141","Horizon Blue","4d74c6"],["Artkal","Midi","S142","Cobolt","416dbe"],["Artkal","Midi","S143","Royal Blue","30429e"],["Artkal","Midi","S144","Marine","024288"],["Artkal","Midi","S145","Pale Yellow Moss","d6ca6a"],["Artkal","Midi","S146","Bloodrose Red","9d1a38"],["Artkal","Midi","S147","Spearmint","80b7a1"],["Artkal","Midi","S148","Mocha","7a594f"],["Artkal","Midi","S149","Creme","efdba1"],["Artkal","Midi","S150","Iris Violet","8884d0"],["Artkal","Midi","S151","Forrest Green","345621"],["Artkal","Midi","S152","Lilac","aeaddc"],["Artkal","Midi","S153","Pale Lilac","bcc3e1"],["Artkal","Midi","S154","Sahara Sand","e3c09a"],["Artkal","Midi","S155","Sunkissed Teint","c58b60"],["Artkal","Midi","S156","Steel Grey","5a5f65"],["Artkal","Midi","S157","Iron Grey","4c5156"],["Artkal","Midi","S158","Pepper","3a3e42"],["Artkal","Midi","S159","Oslo Gray","82878b"],["Artkal","Midi","SE1","Moon","f1f4fa"],["Artkal","Midi","SE2","Raincloud","a2b2d3"],["Artkal","Midi","SE3","Winter","83a6dc"],["Artkal","Midi","SE4","Tide","70d8ed"],["Artkal","Midi","SE5","Aquamarine","69e3d5"],["Artkal","Midi","SE6","Neptune","2a63c8"],["Artkal","Midi","SE7","Rose Quartz","d5aec9"],["Artkal","Midi","SE8","Mauve","af739a"],["Artkal","Midi","SE9","Dark Mauve","704b6d"],["Artkal","Midi","SE10","Wild Berry","d977cd"],["Artkal","Midi","SE11","Sugar Plum","b643ac"],["Artkal","Midi","SE12","Desert","deb181"],["Artkal","Midi","SE13","Peanut","bc9d77"],["Artkal","Midi","SE14","Toffee","ac7f5d"],["Artkal","Midi","SE15","Bark","a37e66"],["Artkal","Midi","SG1","Glow Yellow","c6c0b4"],["Artkal","Midi","SG2","Glow Pink","dfabbc"],["Artkal","Midi","SG3","Glow Blue","6fadc1"],["Artkal","Midi","SL1","Glitter Blue","3687b2"],["Artkal","Midi","SL2","Glitter Green","117c52"],["Artkal","Midi","SL3","Glitter Red","c22933"],["Artkal","Midi","SL4","Glitter Yellow","cdbd00"],["Artkal","Midi","SN1","Neon Orange","ff7405"],["Artkal","Midi","SN2","Neon Green","01c63e"],["Artkal","Midi","SN3","Neon Yellow","f2f33c"],["Artkal","Midi","SN4","Neon Rose","ff477a"],["Artkal","Midi","SP1","Pearlescent Green","93ca87"],["Artkal","Midi","SP2","Pearlescent Tangerine","fe7f54"],["Artkal","Midi","SP3","Pearlescent Orange","f0a149"],["Artkal","Midi","SP4","Pearlescent Pink","dc9ea9"],["Artkal","Midi","SP5","Pearlescent Red","d63c53"],["Artkal","Midi","SP6","Pearlescent Blue","2c4e97"],["Artkal","Midi","SP7","Pearlescent Purple","64427e"],["Artkal","Midi","SP8","Pearlescent White","e0dbca"],["Artkal","Midi","ST1","Transparent","c7bcb8"],["Artkal","Midi","ST2","Transparent Pink","f95498"],["Artkal","Midi","ST3","Transparent Tangering","ff7c45"],["Artkal","Midi","ST4","Transparent Yellow","dadf3d"],["Artkal","Midi","ST5","Transparent Green","0fae58"],["Artkal","Midi","ST6","Transparent Purple","8477b3"],["Artkal","Mini","C01","White","eaeef3"],["Artkal","Mini","C02","Black","292a2b"],["Artkal","Mini","C03","Tangerine","ffa630"],["Artkal","Mini","C04","Yellow Orange","e68739"],["Artkal","Mini","C05","Tall Poppy","cb3531"],["Artkal","Mini","C06","Red","b61927"],["Artkal","Mini","C07","Carnation Pink","e182b0"],["Artkal","Mini","C08","Hot Pink","dc519a"],["Artkal","Mini","C09","Magenta","da4383"],["Artkal","Mini","C10","Picasso","eade7f"],["Artkal","Mini","C11","Yellow","eac125"],["Artkal","Mini","C12","Pistachio","97cf87"],["Artkal","Mini","C13","Pastel Green","8bb23a"],["Artkal","Mini","C14","Green","009053"],["Artkal","Mini","C15","Green Tea","00765f"],["Artkal","Mini","C16","Bright Carrot","f96f40"],["Artkal","Mini","C17","Orange","eb6027"],["Artkal","Mini","C18","Sky Blue","a7cdde"],["Artkal","Mini","C19","Baby Blue","2eabd8"],["Artkal","Mini","C20","Light Blue","0084ce"],["Artkal","Mini","C21","Dark Blue","004fa4"],["Artkal","Mini","C22","Bubble Gun","f2bfb8"],["Artkal","Mini","C23","Sand","dca384"],["Artkal","Mini","C24","Beeswax","eed39e"],["Artkal","Mini","C25","Lavender","8a7ec2"],["Artkal","Mini","C26","Pastel Lavender","9165b2"],["Artkal","Mini","C27","Purple","48337e"],["Artkal","Mini","C28","Marigold","b27938"],["Artkal","Mini","C29","Buccaneer","b35540"],["Artkal","Mini","C30","Redwood","9a4541"],["Artkal","Mini","C31","Light Brown","895d49"],["Artkal","Mini","C32","Brown","65463d"],["Artkal","Mini","C33","Gray","959698"],["Artkal","Mini","C34","Dark Gray","70757b"],["Artkal","Mini","C35","Silver","676b73"],["Artkal","Mini","C36","Old Pink","ce6d83"],["Artkal","Mini","C37","True Blue","0078bf"],["Artkal","Mini","C38","Turquoise","55a4d9"],["Artkal","Mini","C39","Shadow Green","9ec9cd"],["Artkal","Mini","C40","Key Lomen Pie","cdc03f"],["Artkal","Mini","C41","Pastel Yellow","e1d367"],["Artkal","Mini","C42","Sandstorm","e1c835"],["Artkal","Mini","C43","Paprika","b11836"],["Artkal","Mini","C44","Burning Sand","ee927c"],["Artkal","Mini","C46","Canary","e2e65d"],["Artkal","Mini","C47","Vanilla","e9c1a6"],["Artkal","Mini","C48","Corn","ecc03d"],["Artkal","Mini","C49","Raspberry Pink","ef67b2"],["Artkal","Mini","C50","Maverick","c0b7d7"],["Artkal","Mini","C51","Spring Sun","dfdabd"],["Artkal","Mini","C52","Butterfly Bush","4f3989"],["Artkal","Mini","C53","Bright Green","8ec324"],["Artkal","Mini","C54","Medium Turquoise","00a5a1"],["Artkal","Mini","C56","Oslo Gray","82878b"],["Artkal","Mini","C58","Black Rock","36384d"],["Artkal","Mini","C60","Sea Mist","b2d7ce"],["Artkal","Mini","C69","Mine Shaft","383e44"],["Artkal","Mini","C70","Brunswick Green","153838"],["Artkal","Mini","C71","Goldenrod","e8ae00"],["Artkal","Mini","C72","Pastel Orange","d9b35e"],["Artkal","Mini","C73","Sienna","bb6833"],["Artkal","Mini","C74","Deer","cdb277"],["Artkal","Mini","C75","Clay","aa744e"],["Artkal","Mini","C76","Coral Red","ec625e"],["Artkal","Mini","C77","Deep Chestnut","be5d65"],["Artkal","Mini","C78","Red Wine","99323a"],["Artkal","Mini","C79","Light Sea Blue","68c4d2"],["Artkal","Mini","C80","Sea Blue","0093a9"],["Artkal","Mini","C81","Steel Blue","5ab0bf"],["Artkal","Mini","C82","Azure","009ec2"],["Artkal","Mini","C83","Dark Steel Blue","0084b2"],["Artkal","Mini","C84","Drark Algae","adad29"],["Artkal","Mini","C85","Dark Olive","8f8e3c"],["Artkal","Mini","C86","Jade Green","007d2b"],["Artkal","Mini","C87","Ghost While","d4d8d3"],["Artkal","Mini","C88","Ash Grey","c2c4c2"],["Artkal","Mini","C89","Light Gray","a7acad"],["Artkal","Mini","C90","Charcoal Gray","565a5e"],["Artkal","Mini","C91","Dandelion","cea433"],["Artkal","Mini","C92","Pale Skin","dcb794"],["Artkal","Mini","C93","Warm Blush","dd9285"],["Artkal","Mini","C94","Salmon","e07b69"],["Artkal","Mini","C95","Apricot","ef7f61"],["Artkal","Mini","C96","Papaya","dc772b"],["Artkal","Mini","C97","Himalaya Blue","6aaedb"],["Artkal","Mini","C98","Waterfall","61bbd3"],["Artkal","Mini","C99","Lagoon","279bbe"],["Artkal","Mini","C100","Electric Blue","00a7e3"],["Artkal","Mini","C101","Pool Blue","0077ca"],["Artkal","Mini","C102","Caribbian Blue","005aa9"],["Artkal","Mini","C103","Deep Water","007f9e"],["Artkal","Mini","C104","Petrol Blue","007d91"],["Artkal","Mini","C105","Wegdewood Blue","00649a"],["Artkal","Mini","C106","Pond Blue","006c9f"],["Artkal","Mini","C107","Seashell Beige","cfc179"],["Artkal","Mini","C108","Beige","c4ae64"],["Artkal","Mini","C109","Beach Beige","ab9745"],["Artkal","Mini","C110","Caffe Latt\u00e9","978138"],["Artkal","Mini","C111","Oaktree Brown","907c41"],["Artkal","Mini","C112","Khaki","b6ae84"],["Artkal","Mini","C113","Light Greengray","a59f65"],["Artkal","Mini","C114","Mossy Green","938d54"],["Artkal","Mini","C115","Earth Green","8d8b51"],["Artkal","Mini","C116","Sage Green","7f7e49"],["Artkal","Mini","C117","Pinetree Green","5b6e35"],["Artkal","Mini","C118","Frosty Blue","8ad5c9"],["Artkal","Mini","C119","Polar Mint","7cd2a5"],["Artkal","Mini","C120","Celadon Green","72ac9a"],["Artkal","Mini","C121","Eucalyptus","00b26f"],["Artkal","Mini","C122","Clover Field","3eb724"],["Artkal","Mini","C123","Pooltable Felt","0d7535"],["Artkal","Mini","C124","Snake Green","007d6e"],["Artkal","Mini","C125","Dark Eucalyptus","006e69"],["Artkal","Mini","C126","Marsmallow Rose","dfc3e1"],["Artkal","Mini","C127","Light Grape","d38ed4"],["Artkal","Mini","C128","Rosebud Pink","d5a6ba"],["Artkal","Mini","C129","Fuschia","d6668e"],["Artkal","Mini","C130","Candy Violet","b8aad9"],["Artkal","Mini","C131","Flamingo","df486d"],["Artkal","Mini","C132","Pink Plum","bc3ca6"],["Artkal","Mini","C133","Amethyst","803897"],["Artkal","Mini","C134","Moonlight Blue","a7bae1"],["Artkal","Mini","C135","Summer Rain","afb8df"],["Artkal","Mini","C136","Azur Blue","6b9ad4"],["Artkal","Mini","C137","Cornflower Blue","5a89ce"],["Artkal","Mini","C138","Forget Me Not","658ad0"],["Artkal","Mini","C139","Indigo","566cbd"],["Artkal","Mini","C140","Horizon Blue","4d74c6"],["Artkal","Mini","C141","Cobolt","416dbe"],["Artkal","Mini","C142","Royal Blue","30429e"],["Artkal","Mini","C143","Marine","024288"],["Artkal","Mini","C144","Pale Yellow Moss","d6ca6a"],["Artkal","Mini","C145","Bloodrose Red","9d1a38"],["Artkal","Mini","C146","Spearmint","80b7a1"],["Artkal","Mini","C147","Mocha","7a594f"],["Artkal","Mini","C148","Creme","efdba1"],["Artkal","Mini","C149","Iris Violet","8884d0"],["Artkal","Mini","C150","Forrest Green","345621"],["Artkal","Mini","C151","Lilac","aeaddc"],["Artkal","Mini","C152","Pale Lilac","bcc3e1"],["Artkal","Mini","C153","Sahara Sand","e3c09a"],["Artkal","Mini","C154","Sunkissed Teint","c58b60"],["Artkal","Mini","C155","Steel Grey","5a5f65"],["Artkal","Mini","C156","Iron Grey","4c5156"],["Artkal","Mini","C157","Pepper","3a3e42"],["Artkal","Mini","C45","Spring Green","5ddb5d"],["Artkal","Mini","C55","Conifer","6cc24a"],["Artkal","Mini","C57","Fresh Red","bc0423"],["Artkal","Mini","C59","Scarlett","531a23"],["Artkal","Mini","C61","Feta","f1eb9c"],["Artkal","Mini","C62","Carnation","fc3f3f"],["Artkal","Mini","C63","Pink Pearl","eabedb"],["Artkal","Mini","C64","Rose","a50050"],["Artkal","Mini","C65","Mango","ef7e2e"],["Artkal","Mini","C66","Wild Watermelon","fc6c85"],["Artkal","Mini","C67","Orchid","b14eb5"],["Artkal","Mini","C68","Toothpaste Blue","69c2ee"],["Artkal","Mini","CE01","Columbia Blue","c3ced6"],["Artkal","Mini","CE02","Pale Cerulean","9ab2db"],["Artkal","Mini","CE03","Silver Lake Blue","5d88b2"],["Artkal","Mini","CE04","Sky Blue (Crayola)","02bdd1"],["Artkal","Mini","CE05","Maximum Blue Green","52caac"],["Artkal","Mini","CE06","Bright Navy Blue","2d6db2"],["Artkal","Mini","CE07","Black Shadows","c2a3b7"],["Artkal","Mini","CE08","Mountbatten Pink","8a5877"],["Artkal","Mini","CE09","Halay\u00e0 \u00dabe","68355d"],["Artkal","Mini","CE10","Deep Mauve","b84fa8"],["Artkal","Mini","CE11","Heliotrope Magenta","b02fa4"],["Artkal","Mini","CE12","Rajah","e2a365"],["Artkal","Mini","CE13","Earth Yellow","be8e59"],["Artkal","Mini","CE14","Chinese Bronze","a87443"],["Artkal","Mini","CE15","Alloy Orange","a06e52"],["Artkal","Mini","CE16","Orchid Pink","f9c1d7"],["Artkal","Mini","CE17","Caput Mortuum","59292b"],["Perler","Midi","15179","Evergreen","305545"],["Perler","Midi","15181","Light Grey","b3bab8"],["Perler","Midi","15182","Lavender","af9fce"],["Perler","Midi","15199","Shamrock","008f53"],["Perler","Midi","15200","Cobalt","0065b1"],["Perler","Midi","15201","Midnight","2f3c55"],["Perler","Midi","15202","Robin's Egg","a9cdd5"],["Perler","Midi","15203","Flamingo","f2afb7"],["Perler","Midi","15204","Salmon","e1747a"],["Perler","Midi","15205","Fawn","c9a385"],["Perler","Midi","15206","Pewter","94a19d"],["Perler","Midi","15207","Charcoal","4f595a"],["Perler","Midi","15208","Toasted Marshmallow","dedace"],["Perler","Midi","15210","Orchid","b1628e"],["Perler","Midi","15211","Tomato","d14337"],["Perler","Midi","15212","Spice","d9593a"],["Perler","Midi","15213","Apricot","f5a168"],["Perler","Midi","15214","Sherbet","d8e47c"],["Perler","Midi","15215","Mist","93b0bd"],["Perler","Midi","15216","Sky","4ac0d8"],["Perler","Midi","15217","Lagoon","00a4ac"],["Perler","Midi","15218","Teal","047f8a"],["Perler","Midi","15219","Fern","7f971a"],["Perler","Midi","15220","Olive","696e31"],["Perler","Midi","15961","Cherry","9d2b3a"],["Perler","Midi","19001","White","eaefee"],["Perler","Midi","19002","Creme","e1e2bb"],["Perler","Midi","19003","Yellow","e7ce3e"],["Perler","Midi","19004","Orange","eb7b31"],["Perler","Midi","19005","Red","b0353c"],["Perler","Midi","19006","Bubblegum","d8729a"],["Perler","Midi","19007","Purple","684b86"],["Perler","Midi","19008","Dark Blue","0e5092"],["Perler","Midi","19009","Light Blue","278cc9"],["Perler","Midi","19010","Dark Green","007b4e"],["Perler","Midi","19011","Light Green","18c7b1"],["Perler","Midi","19012","Brown","674c44"],["Perler","Midi","19017","Grey","909497"],["Perler","Midi","19018","Black","323234"],["Perler","Midi","19020","Rust","995043"],["Perler","Midi","19021","Light Brown","936848"],["Perler","Midi","19033","Peach","e9bfb9"],["Perler","Midi","19035","Tan","c5ac90"],["Perler","Midi","19038","Magenta","e04284"],["Perler","Midi","19052","Pastel Blue","4a9ccf"],["Perler","Midi","19053","Pastel Green","6dcc94"],["Perler","Midi","19054","Pastel Lavender","937fbf"],["Perler","Midi","19056","Pastel Yellow","e9e290"],["Perler","Midi","19057","Cheddar","fbb146"],["Perler","Midi","19058","Toothpaste","96d1d4"],["Perler","Midi","19059","Hot Coral","dd595b"],["Perler","Midi","19060","Plum","a75d9d"],["Perler","Midi","19061","Kiwi Lime","69b845"],["Perler","Midi","19062","Turquoise","0098c5"],["Perler","Midi","19063","Blush","f99297"],["Perler","Midi","19070","Periwinkle Blue","6683b7"],["Perler","Midi","19079","Light Pink","e1bcce"],["Perler","Midi","19080","Green","4dab64"],["Perler","Midi","19083","Pink","d45496"],["Perler","Midi","19088","Raspberry","983864"],["Perler","Midi","19090","Butterscotch","da9964"],["Perler","Midi","19091","Parrot Green","009188"],["Perler","Midi","19092","Dark Grey","585c61"],["Perler","Midi","19093","Blueberry Creme","85a8e3"],["Perler","Midi","19096","Cranapple","843947"],["Perler","Midi","19097","Prickly Pear","bbc938"],["Perler","Midi","19098","Sand","e5be9e"],["Perler","Midi","15240","Mint","b3eed5"],["Perler","Midi","15241","Sour Apple","a3de6f"],["Perler","Midi","15242","Cotton Candy","f479b0"],["Perler","Midi","15243","Grape","503b9c"],["Perler","Midi","15244","Rose","d25d72"],["Perler","Midi","15245","Iris","4e56a3"],["Perler","Midi","15246","Tangerine","fd5918"],["Perler","Midi","15247","Forest","005d57"],["Perler","Midi","15248","Eggplant","6f3255"],["Perler","Midi","15249","Honey","da8c2c"],["Perler","Midi","15250","Gingerbread","7e5446"],["Perler","Midi","15251","Thistle","8c8ca7"],["Perler","Midi","15252","Slate Blue","5e6d7b"],["Perler","Midi","15253","Denim","4c6388"],["Perler","Midi","15254","Sage","9aa98e"],["Perler","Midi","15255","Orange Cream","efb79b"],["Perler","Midi","15256","Fruit Punch","ca3b65"],["Perler","Midi","15257","Fuchsia","cb59b9"],["Perler","Midi","15258","Mulberry","714875"],["Perler","Midi","15259","Slime","c8c85c"],["Perler","Midi","15260","Stone","988c8c"],["Perler","Midi","15261","Dark Spruce","14313b"],["Perler","Midi","15262","Cocoa","392928"],["Perler","Midi","15265","Twilight Plum","c685b1"],["Perler","Midi","15266","Caribbean Sea","6cc8ad"],["Perler","Midi","15267","Frosted Lilac","cdb7c3"],["Perler","Midi","15273","Brick","fc9574"],["Perler","Midi","15274","Rich Butter","f6ca69"],["Perler","Midi","15275","Peacock","0090ac"],["Perler","Midi","15276","Carnation Pink","f8c7c9"],["Perler","Midi","15089","Neon Blue","406ae1"],["Perler","Midi","15268","Sunflower","deba0b"],["Perler","Midi","15269","Lemon","f6d901"],["Perler","Midi","15263","Celery","bed4a6"],["Perler","Midi","15239","Mocha","c8b693"],["Perler","Midi","15272","Coral","ff9a8b"],["Perler","Mini","15179","Evergreen","305545"],["Perler","Mini","15181","Light Grey","b3bab8"],["Perler","Mini","19001","White","eaefee"],["Perler","Mini","19002","Creme","e1e2bb"],["Perler","Mini","19003","Yellow","e7ce3e"],["Perler","Mini","19004","Orange","eb7b31"],["Perler","Mini","19005","Red","b0353c"],["Perler","Mini","19006","Bubblegum","d8729a"],["Perler","Mini","19007","Purple","684b86"],["Perler","Mini","19008","Dark Blue","0e5092"],["Perler","Mini","19009","Light Blue","278cc9"],["Perler","Mini","19011","Light Green","18c7b1"],["Perler","Mini","19012","Brown","674c44"],["Perler","Mini","19017","Grey","909497"],["Perler","Mini","19018","Black","323234"],["Perler","Mini","19021","Light Brown","936848"],["Perler","Mini","19033","Peach","e9bfb9"],["Perler","Mini","19035","Tan","c5ac90"],["Perler","Mini","19010","Dark Green","007b4e"],["Perler","Mini","19052","Pastel Blue","4a9ccf"],["Perler","Mini","19054","Pastel Lavender","937fbf"],["Perler","Mini","19056","Pastel Yellow","e9e290"],["Perler","Mini","19057","Cheddar","fbb146"],["Perler","Mini","19058","Toothpaste","96d1d4"],["Perler","Mini","19059","Hot Coral","dd595b"],["Perler","Mini","19060","Plum","a75d9d"],["Perler","Mini","19061","Kiwi Lime","69b845"],["Perler","Mini","19062","Turquoise","0098c5"],["Perler","Mini","19063","Blush","f99297"],["Perler","Mini","19079","Light Pink","e1bcce"],["Perler","Mini","19080","Green","4dab64"],["Perler","Mini","19083","Pink","d45496"],["Perler","Mini","19088","Raspberry","983864"],["Perler","Mini","19090","Butterscotch","da9964"],["Perler","Mini","19091","Parrot Green","009188"],["Perler","Mini","19092","Dark Grey","585c61"],["Perler","Mini","19093","Blueberry Creme","85a8e3"],["Perler","Mini","19096","Cranapple","843947"],["Perler","Mini","19097","Prickly Pear","bbc938"],["Perler","Mini","19098","Sand","e5be9e"],["Perler","Mini","14110","Toasted Marshmallow","dedace"],["Nabbi","Midi","01","Black","3a3d41"],["Nabbi","Midi","02","Dark Brown","50443b"],["Nabbi","Midi","03","Brown Medium","5a3e36"],["Nabbi","Midi","04","Maroon","813547"],["Nabbi","Midi","05","Caramel","a76224"],["Nabbi","Midi","06","Tan","ad967e"],["Nabbi","Midi","07","Sand","eeb182"],["Nabbi","Midi","08","Ash","8d8b7f"],["Nabbi","Midi","09","Hunter Green","2f4a39"],["Nabbi","Midi","10","Light Grey","d3cbcb"],["Nabbi","Midi","11","Purple","644591"],["Nabbi","Midi","12","Ivory","e2d0bf"],["Nabbi","Midi","13","Orange","f3601b"],["Nabbi","Midi","14","Yellow","f9ca00"],["Nabbi","Midi","15","White","f4f4f3"],["Nabbi","Midi","16","Green","297a3b"],["Nabbi","Midi","17","Bright Blue","3b75cb"],["Nabbi","Midi","18","Light Rose","e1b4ab"],["Nabbi","Midi","19","Red","df2638"],["Nabbi","Midi","20","Light Brown","b58b69"],["Nabbi","Midi","21","Light Yellow","f5ec8d"],["Nabbi","Midi","22","Lime","48af4f"],["Nabbi","Midi","23","Medium Blue","71a3e6"],["Nabbi","Midi","24","Lavender","b6a0db"],["Nabbi","Midi","25","Pink","ee6a97"],["Nabbi","Midi","26","Peach","fca879"],["Nabbi","Midi","27","Chocolate","875f52"],["Nabbi","Midi","28","Sky","a7c6f1"],["Nabbi","Midi","29","Gold","ee9527"],["Nabbi","Midi","30","Kiwi","c7bf5e"]];
+const LS = "perlelager.v1";
+const nf = new Intl.NumberFormat("nb-NO");
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function blank(){return {stock:{},limits:{},manual:{},custom:[],settings:{limit:500,brand:"Hama",size:"Midi",view:"grid",sort:"num",mine:false}}}
+function load(){
+  try{const d=JSON.parse(localStorage.getItem(LS)); if(d&&d.stock){const b=blank(); return {...b,...d,settings:{...b.settings,...d.settings}}}}catch(e){}
+  return blank();
+}
+let S = load();
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+
+const key = c => c[0]+"|"+c[1]+"|"+c[2];
+function hsl(hex){
+  const r=parseInt(hex.slice(0,2),16)/255,g=parseInt(hex.slice(2,4),16)/255,b=parseInt(hex.slice(4,6),16)/255;
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn;let h=0,s=0;
+  if(d){s=d/(1-Math.abs(2*l-1));h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h*=60;if(h<0)h+=360}
+  return {h,s,l};
+}
+let ALL=[], BY={};
+function rebuild(){
+  ALL = PAL.concat(S.custom).map(c=>({brand:c[0],size:c[1],num:String(c[2]),name:c[3],hex:c[4].replace("#",""),custom:!!c[5]}));
+  ALL.forEach(c=>{c.k=key([c.brand,c.size,c.num]);c.hsl=hsl(c.hex)});
+  BY={}; ALL.forEach(c=>BY[c.k]=c);
+}
+rebuild();
+
+const tracked = k => Object.prototype.hasOwnProperty.call(S.stock,k);
+const count = k => S.stock[k]||0;
+const limitOf = k => S.limits[k] ?? S.settings.limit;
+const isLow = k => tracked(k) && count(k) < limitOf(k);
+const onList = k => isLow(k) || !!S.manual[k];
+
+/* ---------- Lager ---------- */
+const ui = {q:"", hue:null};
+function brands(){return [...new Set(ALL.map(c=>c.brand))]}
+function sizesFor(b){const o=["Midi","Mini","Maxi"];return [...new Set(ALL.filter(c=>c.brand===b).map(c=>c.size))].sort((a,b)=>o.indexOf(a)-o.indexOf(b))}
+function renderChips(){
+  const bs=brands(); if(!bs.includes(S.settings.brand)) S.settings.brand=bs[0];
+  $("#brands").innerHTML = bs.map(b=>{
+    const n=ALL.filter(c=>c.brand===b&&tracked(c.k)).length;
+    return `<button class="chip" data-b="${esc(b)}" aria-pressed="${b===S.settings.brand}">${esc(b)}${n?` · ${n}`:""}</button>`}).join("");
+  const ss=sizesFor(S.settings.brand); if(!ss.includes(S.settings.size)) S.settings.size=ss[0];
+  $("#sizes").innerHTML = ss.map(s=>`<button class="chip small" data-s="${s}" aria-pressed="${s===S.settings.size}">${s}</button>`).join("");
+  $("#brandList").innerHTML = bs.map(b=>`<option value="${esc(b)}">`).join("");
+}
+function hueDist(a,b){const d=Math.abs(a-b)%360;return d>180?360-d:d}
+function filtered(){
+  const q=ui.q.trim().toLowerCase();
+  let list = ALL.filter(c=>c.brand===S.settings.brand && c.size===S.settings.size);
+  if(q) list=list.filter(c=>c.num.toLowerCase().includes(q)||c.name.toLowerCase().includes(q));
+  if(S.settings.mine) list=list.filter(c=>tracked(c.k));
+  if(ui.hue!==null) list=list.filter(c=>c.hsl.s>.18&&c.hsl.l>.08&&c.hsl.l<.93&&hueDist(c.hsl.h,ui.hue)<=24);
+  const by=S.settings.sort;
+  list.sort((a,b)=>{
+    if(by==="cnt") return count(b.k)-count(a.k)||a.num.localeCompare(b.num,"nb",{numeric:true});
+    if(by==="hue"){const ga=a.hsl.s<.18,gb=b.hsl.s<.18;if(ga!==gb)return ga?-1:1;if(ga)return b.hsl.l-a.hsl.l;return a.hsl.h-b.hsl.h}
+    return a.num.localeCompare(b.num,"nb",{numeric:true});
+  });
+  return list;
+}
+function bead(c){return `<span class="bead" style="--c:#${c.hex}" aria-hidden="true"></span>`}
+function renderStats(){
+  const t=ALL.filter(c=>tracked(c.k));
+  const total=t.reduce((s,c)=>s+count(c.k),0);
+  const low=ALL.filter(c=>onList(c.k)).length;
+  $("#stats").innerHTML=`<div class="stat"><b>${nf.format(total)}</b><span>perler totalt</span></div>
+    <div class="stat"><b>${nf.format(t.filter(c=>count(c.k)>0).length)}</b><span>farger på lager</span></div>
+    <div class="stat${low?" warn":""}"><b>${nf.format(low)}</b><span>på handlelisten</span></div>`;
+  const d=$("#shopDot"); d.hidden=!low; d.textContent=low;
+}
+function renderOut(){
+  const list=filtered(), out=$("#out");
+  if(!list.length){out.innerHTML=`<div class="empty">${S.settings.mine?"Du har ikke registrert noen farger her ennå. Slå av «Bare de jeg har» og trykk på en perle for å legge inn antall.":"Ingen farger passer søket."}</div>`;return}
+  if(S.settings.view==="list"){
+    out.innerHTML=`<div class="list">${list.map(c=>`<button class="row${isLow(c.k)?" low":""}" data-k="${esc(c.k)}">${bead(c)}<span class="info"><b>${esc(c.num)}</b><span>${esc(c.name)}</span></span><span class="right">${tracked(c.k)?nf.format(count(c.k)):"–"}${S.manual[c.k]?"<small>på listen</small>":isLow(c.k)?"<small>under grensen</small>":""}</span></button>`).join("")}</div>`;
+  }else{
+    out.innerHTML=`<div class="grid">${list.map(c=>{
+      const t=tracked(c.k),cls=["tile",t?"":"untracked",isLow(c.k)?"low":"",S.manual[c.k]?"shop":""].join(" ");
+      return `<button class="${cls}" data-k="${esc(c.k)}" aria-label="${esc(c.num+" "+c.name)}${t?", "+count(c.k)+" stk":""}">${t?`<span class="badge">${nf.format(count(c.k))}</span>`:""}${bead(c)}<span class="code">${esc(c.num)}</span><span class="cnt">${esc(c.name)}</span></button>`}).join("")}</div>`;
+  }
+}
+function renderLager(){renderChips();renderStats();renderOut();
+  $("#mine").setAttribute("aria-pressed",S.settings.mine);$("#sort").value=S.settings.sort;
+  $("#vGrid").setAttribute("aria-pressed",S.settings.view==="grid");$("#vList").setAttribute("aria-pressed",S.settings.view==="list");}
+
+$("#brands").onclick=e=>{const b=e.target.closest("[data-b]");if(!b)return;S.settings.brand=b.dataset.b;save();renderLager()};
+$("#sizes").onclick=e=>{const b=e.target.closest("[data-s]");if(!b)return;S.settings.size=b.dataset.s;save();renderLager()};
+$("#q").oninput=e=>{ui.q=e.target.value;renderOut()};
+const hueEl=$("#hue");
+function setThumb(){hueEl.style.setProperty("--thumb",`hsl(${hueEl.value} 90% 50%)`)}
+hueEl.oninput=()=>{ui.hue=+hueEl.value;hueEl.classList.remove("off");$("#hueAll").setAttribute("aria-pressed","false");setThumb();renderOut()};
+$("#hueAll").onclick=()=>{ui.hue=null;hueEl.classList.add("off");$("#hueAll").setAttribute("aria-pressed","true");renderOut()};
+$("#mine").onclick=()=>{S.settings.mine=!S.settings.mine;save();renderLager()};
+$("#sort").onchange=e=>{S.settings.sort=e.target.value;save();renderOut()};
+$("#vGrid").onclick=()=>{S.settings.view="grid";save();renderLager()};
+$("#vList").onclick=()=>{S.settings.view="list";save();renderLager()};
+$("#out").onclick=e=>{const t=e.target.closest("[data-k]");if(t)openSheet(t.dataset.k)};
+setThumb();
+
+/* ---------- Fargekort (bunnark) ---------- */
+let curK=null;
+function openSheet(k){curK=k;drawSheet();$("#scrim").classList.add("on");$("#sheet").classList.add("on")}
+function closeSheet(){$("#scrim").classList.remove("on");$("#sheet").classList.remove("on");curK=null;refresh()}
+$("#scrim").onclick=closeSheet;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&curK)closeSheet()});
+function drawSheet(){
+  const c=BY[curK]; if(!c) return;
+  const t=tracked(c.k), n=count(c.k);
+  $("#sheet").innerHTML=`<div class="grab"></div>
+  <div class="sh-head">${bead(c)}<div><div class="eyebrow">${esc(c.brand)} · ${esc(c.size)}</div><h2 id="shTitle">${esc(c.num)} ${esc(c.name)}</h2><div class="muted" style="font-size:.82rem">#${c.hex.toUpperCase()}</div></div></div>
+  <div class="big" id="shBig">${t?nf.format(n):"–"}<small>${t?(isLow(c.k)?`under grensen på ${nf.format(limitOf(c.k))}`:"perler på lager"):"ikke registrert ennå"}</small></div>
+  <div class="steps">${[-1000,-100,-10,10,100,1000].map(v=>`<button data-d="${v}" class="${v>0?"plus":""}">${v>0?"+":"−"}${nf.format(Math.abs(v))}</button>`).join("")}</div>
+  <div class="two">
+    <div class="field"><label for="shCnt">Antall nå</label><input class="inp num" id="shCnt" type="number" inputmode="numeric" min="0" value="${t?n:""}" placeholder="0"></div>
+    <div class="field"><label for="shLim">Bestill når under</label><input class="inp num" id="shLim" type="number" inputmode="numeric" min="0" value="${S.limits[c.k]??""}" placeholder="${S.settings.limit}"></div>
+  </div>
+  <button class="switch" id="shMan" role="switch" aria-checked="${!!S.manual[c.k]}">Legg på handlelisten<i></i></button>
+  <div class="btnrow">${t?`<button class="btn" id="shUn">Fjern fra lageret</button>`:""}${c.custom?`<button class="btn danger" id="shDel">Slett egen farge</button>`:""}<button class="btn primary" id="shDone">Ferdig</button></div>`;
+  const sh=$("#sheet");
+  sh.querySelector(".steps").onclick=e=>{const b=e.target.closest("[data-d]");if(!b)return;setCount(c.k,Math.max(0,count(c.k)+ +b.dataset.d));};
+  $("#shCnt").onchange=e=>{const v=e.target.value.trim(); if(v==="") {delete S.stock[c.k]} else S.stock[c.k]=Math.max(0,Math.round(+v)||0); save(); drawSheet()};
+  $("#shLim").onchange=e=>{const v=e.target.value.trim(); if(v==="") delete S.limits[c.k]; else S.limits[c.k]=Math.max(0,Math.round(+v)||0); save(); drawSheet()};
+  $("#shMan").onclick=()=>{if(S.manual[c.k])delete S.manual[c.k];else S.manual[c.k]=true;save();drawSheet()};
+  $("#shDone").onclick=closeSheet;
+  const un=$("#shUn"); if(un) un.onclick=()=>{delete S.stock[c.k];save();drawSheet();toast("Fjernet fra lageret")};
+  const del=$("#shDel"); if(del) del.onclick=()=>{
+    if(!del.classList.contains("armed")){del.classList.add("armed");del.textContent="Trykk igjen for å slette";return}
+    S.custom=S.custom.filter(x=>key(x)!==c.k);delete S.stock[c.k];delete S.limits[c.k];delete S.manual[c.k];save();rebuild();closeSheet();toast("Fargen er slettet")};
+}
+function setCount(k,v){S.stock[k]=v;save();drawSheet()}
+
+/* ---------- Handleliste ---------- */
+function shopItems(){return ALL.filter(c=>onList(c.k))}
+function renderShop(){
+  const items=shopItems(), out=$("#shopOut");
+  if(!items.length){out.innerHTML=`<div class="empty">Handlelisten er tom. Farger dukker opp her når du har færre enn grensen, eller når du legger dem til fra fargekortet.</div>`;return}
+  const groups={}; items.forEach(c=>{(groups[c.brand+" · "+c.size]??=[]).push(c)});
+  out.innerHTML=Object.entries(groups).map(([g,l])=>{
+    l.sort((a,b)=>a.num.localeCompare(b.num,"nb",{numeric:true}));
+    return `<div class="group-h"><h2>${esc(g)}</h2><span class="muted num">${l.length} farger</span></div>
+    <div class="list">${l.map(c=>`<div class="row shop${isLow(c.k)?" low":""}">${bead(c)}<span class="info"><b>${esc(c.num)} ${esc(c.name)}</b><span>${tracked(c.k)?`Har ${nf.format(count(c.k))} av ${nf.format(limitOf(c.k))}`:"Lagt til manuelt"}</span></span>
+      <span class="buyrow"><input class="inp num" type="number" inputmode="numeric" min="0" value="1000" aria-label="Antall kjøpt" id="buy-${esc(c.k).replace(/[^\w]/g,"_")}"><button class="btn primary" data-buy="${esc(c.k)}">Kjøpt</button></span></div>`).join("")}</div>`;
+  }).join("");
+}
+$("#shopOut").onclick=e=>{const b=e.target.closest("[data-buy]");if(!b)return;const k=b.dataset.buy;
+  const inp=b.parentElement.querySelector("input"); const add=Math.max(0,Math.round(+inp.value)||0);
+  S.stock[k]=count(k)+add; delete S.manual[k]; save(); refresh(); toast(`La til ${nf.format(add)} perler`)};
+$("#copyList").onclick=async()=>{
+  const items=shopItems(); if(!items.length){toast("Handlelisten er tom");return}
+  const txt="Perler å kjøpe:\n"+items.map(c=>`• ${c.brand} ${c.size} ${c.num} ${c.name}`).join("\n");
+  try{await navigator.clipboard.writeText(txt);toast("Listen er kopiert")}catch(e){showText(txt)}
+};
+
+/* ---------- Innstillinger ---------- */
+function renderInst(){
+  $("#defLimit").value=S.settings.limit;
+  $("#customList").innerHTML=S.custom.length?`<div class="list" style="margin-top:14px">${S.custom.map(x=>{const c=BY[key(x)];return `<button class="row" data-k="${esc(c.k)}">${bead(c)}<span class="info"><b>${esc(c.brand)} ${esc(c.num)}</b><span>${esc(c.size)} · ${esc(c.name)}</span></span></button>`}).join("")}</div>`:"";
+}
+$("#customList").onclick=e=>{const t=e.target.closest("[data-k]");if(t)openSheet(t.dataset.k)};
+$("#defLimit").onchange=e=>{S.settings.limit=Math.max(0,Math.round(+e.target.value)||0);save();refresh();toast("Grensen er lagret")};
+$("#cHex").oninput=e=>$("#cHexTxt").textContent=e.target.value;
+$("#cAdd").onclick=()=>{
+  const b=$("#cBrand").value.trim(), s=$("#cSize").value, n=$("#cNum").value.trim(), nm=$("#cName").value.trim()||"Uten navn", h=$("#cHex").value.replace("#","");
+  if(!b||!n){toast("Fyll inn merke og nummer");return}
+  if(BY[key([b,s,n])]){toast("Den fargen finnes allerede");return}
+  S.custom.push([b,s,n,nm,h,1]); save(); rebuild();
+  $("#cNum").value="";$("#cName").value=""; renderInst(); renderChips(); toast(`${b} ${n} er lagt til`);
+};
+function backup(){return JSON.stringify({app:"perlelager",v:1,saved:new Date().toISOString(),...S})}
+$("#expDl").onclick=()=>{
+  try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([backup()],{type:"application/json"}));
+    a.download=`perlelager-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();toast("Filen er lastet ned")}
+  catch(e){showText(backup())}
+};
+$("#expCopy").onclick=async()=>{try{await navigator.clipboard.writeText(backup());toast("Kopien ligger i utklippstavlen")}catch(e){showText(backup())}};
+function restore(txt){
+  try{const d=JSON.parse(txt); if(!d||typeof d.stock!=="object") throw 0;
+    const b=blank(); S={stock:d.stock||{},limits:d.limits||{},manual:d.manual||{},custom:d.custom||[],settings:{...b.settings,...(d.settings||{})}};
+    save(); rebuild(); refresh(); toast("Lageret er gjenopprettet")}
+  catch(e){toast("Teksten er ikke en gyldig sikkerhetskopi")}
+}
+$("#impGo").onclick=()=>restore($("#impTxt").value);
+$("#impFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>restore(r.result);r.readAsText(f);e.target.value=""};
+$("#reset").onclick=e=>{const b=e.currentTarget;
+  if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="Trykk igjen for å slette alt";setTimeout(()=>{b.classList.remove("armed");b.textContent="Nullstill lageret"},4000);return}
+  S=blank();save();rebuild();refresh();b.classList.remove("armed");b.textContent="Nullstill lageret";toast("Lageret er nullstilt")};
+
+function showText(txt){
+  curK=null;$("#sheet").innerHTML=`<div class="grab"></div><h2 id="shTitle">Kopier teksten</h2><p class="muted">Hold fingeren på teksten og velg Kopier.</p><textarea class="inp" id="tx" readonly style="min-height:200px">${esc(txt)}</textarea><div class="btnrow"><button class="btn primary" id="txDone">Lukk</button></div>`;
+  $("#scrim").classList.add("on");$("#sheet").classList.add("on");const t=$("#tx");t.focus();t.select();$("#txDone").onclick=closeSheet;
+}
+
+/* ---------- Faner og felles ---------- */
+let tab="lager";
+document.querySelector(".tabs").onclick=e=>{const b=e.target.closest("[data-tab]");if(!b)return;tab=b.dataset.tab;
+  document.querySelectorAll(".tabs [data-tab]").forEach(x=>x.setAttribute("aria-selected",x===b));
+  ["lager","handle","inst"].forEach(t=>$("#v-"+t).hidden=t!==tab); refresh(); window.scrollTo(0,0)};
+function refresh(){renderStats(); if(tab==="lager")renderLager(); if(tab==="handle")renderShop(); if(tab==="inst")renderInst()}
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1800)}
+
+/* Eksempeldata første gang, tydelig merket, slik at appen ikke åpner tom */
+try{ if(!Object.keys(S.stock).length && !localStorage.getItem(LS+".seeded")){
+  [["01",1800],["02",2000],["03",350],["05",900],["09",120],["18",3000]].forEach(([n,v])=>{const k="Hama|Midi|"+n;if(BY[k])S.stock[k]=v});
+    localStorage.setItem(LS+".seeded","1"); save(); setTimeout(()=>toast("Eksempeltall er lagt inn – endre dem fritt"),400);}}catch(e){}
+refresh();
+if("serviceWorker" in navigator && location.protocol==="https:" && !/claude|anthropic/.test(location.hostname)){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+</script>
+
+</body>
+</html>
