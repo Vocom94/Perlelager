@@ -159,6 +159,74 @@ textarea.inp{min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .colorpick{display:flex;gap:10px;align-items:center}
 .colorpick input[type=color]{width:52px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:3px}
+
+/* Registrering, skanning og manuelt valg */
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.btn.armed{background:var(--warn);border-color:var(--warn);color:#fff}
+.overlay{position:fixed;inset:0;z-index:45;background:var(--bg);overflow-y:auto;overscroll-behavior:contain}
+.ov-head{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding-top:calc(env(safe-area-inset-top,0px) + 10px);padding-bottom:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ov-head h2{flex:1;font-size:1.15rem}
+.ov-head .btn{padding:8px 14px}
+.ov-body{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px calc(env(safe-area-inset-bottom,0px) + 96px)}
+.ov-foot{position:fixed;left:0;right:0;bottom:0;z-index:3;background:var(--surface);border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ov-foot .grow{flex:1;font-weight:600;font-variant-numeric:tabular-nums}
+.stepbar{display:flex;gap:6px;margin-bottom:14px}
+.stepbar span{flex:1;height:4px;border-radius:9px;background:var(--line)}
+.stepbar span.on{background:var(--accent)}
+.action{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:12px}
+.action .ic{width:48px;height:48px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.action .tx{min-width:0}
+.action .tx b{display:block;font-size:1.02rem}
+.action .tx small{font-size:.85rem;color:var(--muted)}
+.platecard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;color:var(--accent)}
+.platecard .t{flex:1;min-width:0;color:var(--ink)}
+.platecard .t b{display:block;font-size:1.05rem}
+.platecard .t small{display:block;font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.ptile{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent);text-align:center;min-width:0}
+.ptile[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.ptile b{color:var(--ink);font-size:.82rem;line-height:1.2}
+.ptile small{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.cv-wrap{display:flex;justify-content:center;background:#111;border-radius:14px;overflow:hidden}
+#cq{touch-action:none;display:block}
+.adj{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:center}
+.stepper{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 6px 4px 12px;font-size:.85rem;font-weight:600}
+.stepper button{width:34px;height:34px;border-radius:9px;border:0;background:var(--chip);font-weight:700;font-size:1.1rem}
+.stepper b{min-width:28px;text-align:center;font-variant-numeric:tabular-nums}
+.stepper input{width:60px;text-align:center;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:5px 4px;font-size:16px;font-variant-numeric:tabular-nums}
+.adj .switch{margin-top:0;width:auto;flex:1 1 200px}
+.rvbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.rvbar .grow{flex:1}
+.rvbar .seg button{font-size:.85rem;font-weight:600;padding:6px 12px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-weight:700;font-size:.84rem;background:var(--chip);font-variant-numeric:tabular-nums}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.ok{color:var(--ok)}
+.rv-scroll{overflow:auto;max-height:62vh;border:1px solid var(--line);border-radius:14px;background:var(--surface);-webkit-overflow-scrolling:touch}
+#rv{display:block}
+.bulk{background:var(--warn-soft);border-radius:14px;padding:12px 14px;margin-top:12px}
+.bulk p{margin:0 0 10px;font-size:.88rem}
+.bulk .btnrow{margin-top:0}
+.crop{display:block;width:200px;height:200px;border-radius:14px;margin:12px auto 0;background:#111}
+.guess{text-align:center;margin-top:8px;font-size:.88rem;color:var(--muted)}
+.cands{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:14px}
+.cand{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:8px 10px;text-align:left;min-width:0}
+.cand .bead{width:30px;flex:none}
+.cand .l{min-width:0;font-size:.85rem;line-height:1.2}
+.cand .l b{display:block}
+.cand.best{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.cand.plain{justify-content:center;font-weight:600}
+.allc{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:10px 6px;margin-top:10px}
+.allc button{border:0;background:transparent;padding:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72rem;font-weight:700;font-variant-numeric:tabular-nums}
+.allc .bead{width:38px}
+.draft-row .stepper{padding:2px 4px;background:var(--bg);gap:4px}
+.draft-row .stepper button{width:30px;height:30px}
+.draft-row .stepper input{width:54px}
+.draft-row .info em{font-style:normal;color:var(--warn);font-size:.78rem;display:block}
+.tile{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.tile:active .bead{transform:scale(.92)}
+.tile .badge.use{background:var(--ink);color:var(--bg)}
+details summary{font-weight:700;cursor:pointer;padding:6px 0}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -193,6 +261,14 @@ textarea.inp{min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size
       </div>
     </div>
     <div id="out"></div>
+  </section>
+
+
+  <section id="v-reg" hidden>
+    <div class="eyebrow">Ferdig med et prosjekt?</div><h1>Registrer forbruk</h1>
+    <button class="action" id="goScan"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span><span class="tx"><b>Skann perleplate</b><small>Ta bilde av platen, så teller appen perlene</small></span></button>
+    <button class="action" id="goPick"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><circle cx="7" cy="17" r="3"/><path d="M14 14l6 6M20 14v6h-6"/></svg></span><span class="tx"><b>Velg farger manuelt</b><small>Trykk på fargene du har brukt</small></span></button>
+    <div id="regOut"></div>
   </section>
 
   <section id="v-handle" hidden>
@@ -248,9 +324,29 @@ textarea.inp{min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size
 
 <nav class="tabs" role="tablist">
   <button role="tab" data-tab="lager" aria-selected="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="3.2"/><circle cx="17" cy="7" r="3.2"/><circle cx="7" cy="17" r="3.2"/><circle cx="17" cy="17" r="3.2"/></svg>Lager</button>
+  <button role="tab" data-tab="reg" aria-selected="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Registrer<span class="dot" id="regDot" hidden></span></button>
   <button role="tab" data-tab="handle" aria-selected="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 4h2l2.4 11h10.2L20 8H6.2"/><circle cx="9" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/></svg>Handleliste<span class="dot" id="shopDot" hidden></span></button>
   <button role="tab" data-tab="inst" aria-selected="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Innstillinger</button>
 </nav>
+
+
+<div class="overlay" id="scan" hidden>
+  <div class="ov-head"><h2>Skann perleplate</h2><button class="btn" id="scClose">Lukk</button></div>
+  <div class="ov-body" id="scBody"></div>
+</div>
+
+<div class="overlay" id="pick" hidden>
+  <div class="ov-head"><h2>Velg farger brukt</h2><button class="btn" id="pkClose">Lukk</button></div>
+  <div class="ov-body">
+    <p class="muted" style="margin:0 0 10px">Trykk på en perle for å legge til 1. Hold inne for å skrive antall.</p>
+    <label class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="pkQ" type="search" placeholder="Søk nummer eller navn …" autocomplete="off" aria-label="Søk farger"></label>
+    <div class="chips" id="pkBrands" role="group" aria-label="Merke" style="margin-top:10px"></div>
+    <div class="chips" id="pkSizes" role="group" aria-label="Størrelse" style="margin-top:8px"></div>
+    <div class="toolrow" style="margin:10px 0 6px"><button class="toggle" id="pkMine" aria-pressed="true">Bare de jeg har</button></div>
+    <div id="pkGrid"></div>
+  </div>
+  <div class="ov-foot"><span class="grow" id="pkSum"></span><button class="btn primary" id="pkDone">Ferdig</button></div>
+</div>
 
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle"></div>
@@ -263,7 +359,7 @@ const nf = new Intl.NumberFormat("nb-NO");
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-function blank(){return {stock:{},limits:{},manual:{},custom:[],settings:{limit:500,brand:"Hama",size:"Midi",view:"grid",sort:"num",mine:false}}}
+function blank(){return {stock:{},limits:{},manual:{},custom:[],draft:{},draftPlates:0,plateAdj:{},customPlates:[],scanPal:"Hama|Midi",lastPlate:"sq-l",settings:{limit:500,brand:"Hama",size:"Midi",view:"grid",sort:"num",mine:false}}}
 function load(){
   try{const d=JSON.parse(localStorage.getItem(LS)); if(d&&d.stock){const b=blank(); return {...b,...d,settings:{...b.settings,...d.settings}}}}catch(e){}
   return blank();
@@ -329,6 +425,7 @@ function renderStats(){
     <div class="stat"><b>${nf.format(t.filter(c=>count(c.k)>0).length)}</b><span>farger på lager</span></div>
     <div class="stat${low?" warn":""}"><b>${nf.format(low)}</b><span>på handlelisten</span></div>`;
   const d=$("#shopDot"); d.hidden=!low; d.textContent=low;
+  const dk=Object.keys(S.draft).filter(k=>S.draft[k]>0&&BY[k]).length, rd=$("#regDot"); rd.hidden=!dk; rd.textContent=dk;
 }
 function renderOut(){
   const list=filtered(), out=$("#out");
@@ -362,7 +459,7 @@ setThumb();
 /* ---------- Fargekort (bunnark) ---------- */
 let curK=null;
 function openSheet(k){curK=k;drawSheet();$("#scrim").classList.add("on");$("#sheet").classList.add("on")}
-function closeSheet(){$("#scrim").classList.remove("on");$("#sheet").classList.remove("on");curK=null;refresh()}
+function closeSheet(){$("#sheet").onclick=null;$("#scrim").classList.remove("on");$("#sheet").classList.remove("on");curK=null;refresh()}
 $("#scrim").onclick=closeSheet;
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&curK)closeSheet()});
 function drawSheet(){
@@ -437,7 +534,7 @@ $("#expDl").onclick=()=>{
 $("#expCopy").onclick=async()=>{try{await navigator.clipboard.writeText(backup());toast("Kopien ligger i utklippstavlen")}catch(e){showText(backup())}};
 function restore(txt){
   try{const d=JSON.parse(txt); if(!d||typeof d.stock!=="object") throw 0;
-    const b=blank(); S={stock:d.stock||{},limits:d.limits||{},manual:d.manual||{},custom:d.custom||[],settings:{...b.settings,...(d.settings||{})}};
+    const b=blank(); delete d.app; delete d.v; delete d.saved; S={...b,...d,settings:{...b.settings,...(d.settings||{})}};
     save(); rebuild(); refresh(); toast("Lageret er gjenopprettet")}
   catch(e){toast("Teksten er ikke en gyldig sikkerhetskopi")}
 }
@@ -452,12 +549,450 @@ function showText(txt){
   $("#scrim").classList.add("on");$("#sheet").classList.add("on");const t=$("#tx");t.focus();t.select();$("#txDone").onclick=closeSheet;
 }
 
+
+/* ---------- Forbruksliste (felles for skanning og manuelt valg) ---------- */
+function draftKeys(){return Object.keys(S.draft).filter(k=>S.draft[k]>0&&BY[k])}
+function addDraft(k,n){const v=Math.max(0,(S.draft[k]||0)+n); if(v)S.draft[k]=v; else delete S.draft[k]; save()}
+function renderReg(){
+  const ks=draftKeys().sort((a,b)=>S.draft[b]-S.draft[a]);
+  const total=ks.reduce((s,k)=>s+S.draft[k],0), out=$("#regOut");
+  if(!ks.length){out.innerHTML=`<div class="empty">Ingen forbruk registrert ennå. Skann en plate eller velg farger manuelt, så samles alt her før det trekkes fra lageret.</div>`;return}
+  const pl=S.draftPlates||0;
+  out.innerHTML=`<div class="group-h"><h2>Trekkes fra lageret</h2><span class="muted num">${nf.format(total)} perler · ${ks.length} farger${pl?` · ${pl} ${pl===1?"plate":"plater"}`:""}</span></div>
+  <div class="list">${ks.map(k=>{const c=BY[k],n=S.draft[k];
+    const warn=!tracked(k)?"Ikke registrert på lageret":count(k)<n?`Har bare ${nf.format(count(k))} på lageret`:"";
+    return `<div class="row draft-row">${bead(c)}<span class="info"><b>${esc(c.num)} ${esc(c.name)}</b><span>${esc(c.brand)} ${esc(c.size)}</span>${warn?`<em>${warn}</em>`:""}</span>
+    <span class="stepper"><button data-dk="${esc(k)}" data-dd="-1" aria-label="Én færre">−</button><input type="number" inputmode="numeric" min="0" value="${n}" data-dset="${esc(k)}" aria-label="Antall brukt av ${esc(c.num)}"><button data-dk="${esc(k)}" data-dd="1" aria-label="Én flere">+</button></span></div>`}).join("")}</div>
+  <div class="btnrow"><button class="btn danger" id="draftClear">Tøm listen</button><button class="btn primary" id="draftApply">Trekk fra lageret</button></div>`;
+  $("#draftApply").onclick=applyDraft;
+  $("#draftClear").onclick=e=>{const b=e.currentTarget;
+    if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="Trykk igjen for å tømme";return}
+    S.draft={};S.draftPlates=0;save();refresh();toast("Listen er tømt")};
+}
+$("#regOut").onclick=e=>{const b=e.target.closest("[data-dk]");if(!b)return;addDraft(b.dataset.dk,+b.dataset.dd);renderReg();renderStats()};
+$("#regOut").onchange=e=>{const i=e.target.closest("[data-dset]");if(!i)return;const v=Math.max(0,Math.round(+i.value)||0);
+  if(v)S.draft[i.dataset.dset]=v;else delete S.draft[i.dataset.dset];save();renderReg();renderStats()};
+function applyDraft(){
+  let n=0,skip=0;
+  draftKeys().forEach(k=>{if(tracked(k)){S.stock[k]=Math.max(0,count(k)-S.draft[k]);n+=S.draft[k]}else skip++});
+  S.draft={};S.draftPlates=0;save();refresh();
+  toast(`Trakk fra ${nf.format(n)} perler`+(skip?` · ${skip} ${skip===1?"farge var":"farger var"} ikke registrert`:""));
+}
+$("#goScan").onclick=()=>openScan();
+$("#goPick").onclick=()=>openPick();
+
+function openOverlay(id){$(id).hidden=false;$(id).scrollTop=0;document.body.style.overflow="hidden"}
+function closeOverlay(id){$(id).hidden=true;document.body.style.overflow="";refresh()}
+
+/* ---------- Manuelt valg ---------- */
+const PK={brand:null,size:null,q:"",mine:true};
+function openPick(){PK.brand=PK.brand||S.settings.brand;PK.size=PK.size||S.settings.size;PK.mine=ALL.some(c=>tracked(c.k));openOverlay("#pick");renderPick()}
+function renderPick(){
+  const bs=brands(); if(!bs.includes(PK.brand))PK.brand=bs[0];
+  const ss=sizesFor(PK.brand); if(!ss.includes(PK.size))PK.size=ss[0];
+  $("#pkBrands").innerHTML=bs.map(b=>`<button class="chip" data-b="${esc(b)}" aria-pressed="${b===PK.brand}">${esc(b)}</button>`).join("");
+  $("#pkSizes").innerHTML=ss.map(s=>`<button class="chip small" data-s="${s}" aria-pressed="${s===PK.size}">${s}</button>`).join("");
+  $("#pkMine").setAttribute("aria-pressed",PK.mine);
+  const q=PK.q.trim().toLowerCase();
+  const l=ALL.filter(c=>c.brand===PK.brand&&c.size===PK.size&&(!PK.mine||tracked(c.k))&&(!q||c.num.toLowerCase().includes(q)||c.name.toLowerCase().includes(q)))
+    .sort((a,b)=>a.num.localeCompare(b.num,"nb",{numeric:true}));
+  $("#pkGrid").innerHTML=l.length?`<div class="grid">${l.map(c=>{const u=S.draft[c.k]||0;
+    return `<button class="tile" data-k="${esc(c.k)}" aria-label="${esc(c.num+" "+c.name)}${u?", "+u+" brukt":""}">${u?`<span class="badge use">${nf.format(u)}</span>`:""}${bead(c)}<span class="code">${esc(c.num)}</span><span class="cnt">${tracked(c.k)?nf.format(count(c.k))+" på lager":esc(c.name)}</span></button>`}).join("")}</div>`
+    :`<div class="empty">${PK.mine?"Ingen registrerte farger her. Slå av «Bare de jeg har» for å se alle.":"Ingen farger passer søket."}</div>`;
+  const ks=draftKeys(),t=ks.reduce((s,k)=>s+S.draft[k],0);
+  $("#pkSum").textContent=t?`${nf.format(t)} perler i ${ks.length} farger`:"Ingen valgt ennå";
+}
+$("#pkBrands").onclick=e=>{const b=e.target.closest("[data-b]");if(!b)return;PK.brand=b.dataset.b;renderPick()};
+$("#pkSizes").onclick=e=>{const b=e.target.closest("[data-s]");if(!b)return;PK.size=b.dataset.s;renderPick()};
+$("#pkQ").oninput=e=>{PK.q=e.target.value;renderPick()};
+$("#pkMine").onclick=()=>{PK.mine=!PK.mine;renderPick()};
+$("#pkClose").onclick=()=>closeOverlay("#pick");
+$("#pkDone").onclick=()=>{closeOverlay("#pick");goTab("reg")};
+(()=>{const g=$("#pkGrid");let lp=null;
+  g.addEventListener("pointerdown",e=>{const t=e.target.closest("[data-k]");if(!t)return;
+    const k=t.dataset.k; lp={k,x:e.clientX,y:e.clientY,fired:false,tm:setTimeout(()=>{if(lp){lp.fired=true;askNum(k)}},450)}});
+  g.addEventListener("pointermove",e=>{if(lp&&Math.hypot(e.clientX-lp.x,e.clientY-lp.y)>10){clearTimeout(lp.tm);lp=null}});
+  const end=e=>{if(!lp)return;clearTimeout(lp.tm);if(!lp.fired&&e.type==="pointerup"){addDraft(lp.k,1);renderPick();renderStats()}lp=null};
+  g.addEventListener("pointerup",end);g.addEventListener("pointercancel",end);
+  g.addEventListener("contextmenu",e=>e.preventDefault());
+})();
+function askNum(k){
+  const c=BY[k];curK=null;
+  $("#sheet").innerHTML=`<div class="grab"></div><div class="sh-head">${bead(c)}<div><div class="eyebrow">${esc(c.brand)} · ${esc(c.size)}</div><h2 id="shTitle">${esc(c.num)} ${esc(c.name)}</h2></div></div>
+  <div class="field"><label for="numIn">Antall brukt</label><input class="inp num" id="numIn" type="number" inputmode="numeric" min="0" value="${S.draft[k]||""}" placeholder="0"></div>
+  <div class="btnrow"><button class="btn" id="numCancel">Avbryt</button><button class="btn primary" id="numOk">Lagre</button></div>`;
+  openSheetRaw(); setTimeout(()=>$("#numIn").focus(),250);
+  $("#numCancel").onclick=closeSheet;
+  const ok=()=>{const v=Math.max(0,Math.round(+$("#numIn").value)||0);if(v)S.draft[k]=v;else delete S.draft[k];save();closeSheet()};
+  $("#numOk").onclick=ok; $("#numIn").onkeydown=e=>{if(e.key==="Enter")ok()};
+}
+function openSheetRaw(){$("#scrim").classList.add("on");$("#sheet").classList.add("on")}
+
+/* ---------- Plater ---------- */
+/* id, navn, gruppe, bredde cm, høyde cm, forskjøvne rader, ikon, anslått mål */
+const PLATES=[
+ ["sq-l","Firkant stor","Geometriske",14.5,14.5,0,"sq"],["sq-s","Firkant liten","Geometriske",7.5,7.5,0,"sq"],
+ ["rd-l","Rund stor","Geometriske",15,15,0,"ci"],["rd-m","Rund medium","Geometriske",12,12,0,"ci"],["rd-s","Rund liten","Geometriske",8,8,0,"ci"],
+ ["hx-l","Sekskant stor","Geometriske",16.5,14.5,1,"hx"],["hx-m","Sekskant medium","Geometriske",12.5,11.5,1,"hx"],["hx-s","Sekskant liten","Geometriske",8,9,1,"hx"],
+ ["ht-l","Hjerte stort","Geometriske",17.5,15.5,0,"ht"],["ht-s","Hjerte lite","Geometriske",9,7.5,0,"ht"],
+ ["st-l","Stjerne stor","Geometriske",16.5,14,1,"st"],["st-s","Stjerne liten","Geometriske",10,9,1,"st"],
+ ["fl-l","Blomst stor","Former",12,10,0,"fl"],["fl-s","Blomst liten","Former",8,6.5,0,"fl"],["egg","Egg","Former",9.5,12.5,0,"eg"],["bfly","Sommerfugl","Former",10.5,8,0,"bf"],
+ ["abc","Bokstaver","Bokstaver og tall",21.5,14.5,0,"tx"],["123","Tall","Bokstaver og tall",16,9.5,0,"tx"],
+ ["dog","Hund","Dyr",9.5,7.5],["cat","Katt","Dyr",13.5,11],["horse","Hest","Dyr",15,13.5],["fhorse","Fantasihest","Dyr",18.5,15],
+ ["dragon","Drage","Dyr",15,13],["dino","Dinosaur","Dyr",9.5,11],["dolphin","Delfin","Dyr",15.5,7.5],["seahorse","Sjøhest","Dyr",5.5,10.5],
+ ["mouse","Mus","Dyr",9.5,8],["rabbit","Kanin","Dyr",12.5,9],["squirrel","Ekorn","Dyr",13,12],
+ ["elephant","Elefant","Dyr",13,11,0,"",1],["penguin","Pingvin","Dyr",9,12,0,"",1],["parrot","Papegøye","Dyr",10,13,0,"",1],
+ ["giraffe","Giraff","Dyr",10,15,0,"",1],["lion","Løve","Dyr",12,11,0,"",1],["camel","Kamel","Dyr",13,11,0,"",1],["frog","Frosk","Dyr",12,10,0,"",1],
+ ["car","Bil","Kjøretøy og hus",10,6],["truck","Lastebil","Kjøretøy og hus",17.5,10],["house","Hus","Kjøretøy og hus",17,15],
+ ["princess","Prinsesse","Figurer",10,15,0,"",1],["doll","Dukke","Figurer",10,15,0,"",1]
+];
+function plates(){
+  return PLATES.map(p=>({id:p[0],name:p[1],group:p[2],w:p[3],h:p[4],off:!!p[5],icon:p[6]||"",est:!!p[7]}))
+    .concat(S.customPlates.map(p=>({...p,group:"Egne plater",custom:true})));
+}
+function plateById(id){const l=plates();return l.find(p=>p.id===id)||l[0]}
+function dimsOf(p){
+  const a=S.plateAdj[p.id]; if(a) return {...a};
+  if(p.custom) return {cols:p.cols,rows:p.rows,off:!!p.off};
+  return {cols:Math.max(2,Math.round(p.w/0.5)),rows:Math.max(2,Math.round(p.h/(p.off?0.433:0.5))),off:p.off};
+}
+function plateIcon(p,sz=34){
+  const f='fill="currentColor"', m={
+   sq:`<rect x="4" y="4" width="16" height="16" rx="2" ${f}/>`, ci:`<circle cx="12" cy="12" r="9" ${f}/>`,
+   hx:`<path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z" ${f}/>`,
+   ht:`<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" ${f}/>`,
+   st:`<path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z" ${f}/>`,
+   fl:`<g ${f}><circle cx="12" cy="6.5" r="4"/><circle cx="17.5" cy="12" r="4"/><circle cx="12" cy="17.5" r="4"/><circle cx="6.5" cy="12" r="4"/></g>`,
+   eg:`<ellipse cx="12" cy="12.5" rx="7" ry="9" ${f}/>`,
+   bf:`<g ${f}><ellipse cx="7.5" cy="9" rx="4.5" ry="5"/><ellipse cx="16.5" cy="9" rx="4.5" ry="5"/><ellipse cx="8.5" cy="16.5" rx="3.5" ry="3.5"/><ellipse cx="15.5" cy="16.5" rx="3.5" ry="3.5"/></g>`
+  };
+  const inner=m[p.icon]||`<circle cx="12" cy="12" r="10.5" fill="currentColor" opacity=".16"/><text x="12" y="16.3" text-anchor="middle" font-size="11.5" font-weight="800" font-family="system-ui,sans-serif" fill="currentColor">${esc(p.icon==="tx"?(p.id==="abc"?"A":"1"):p.name[0])}</text>`;
+  return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`;
+}
+function openPlatePicker(){
+  curK=null; const ps=plates(), groups=[...new Set(ps.map(p=>p.group))];
+  $("#sheet").innerHTML=`<div class="grab"></div><h2 id="shTitle">Velg plate</h2>
+  <p class="muted" style="margin:4px 0 0;font-size:.85rem">Størrelsen er regnet ut fra platens mål. Merket «anslått» betyr at jeg ikke fant mål; juster første gang du skanner.</p>
+  <label class="search" style="margin-top:12px"><input id="plQ" type="search" placeholder="Søk plate …" aria-label="Søk plate" autocomplete="off"></label>
+  <div id="plList"></div>
+  <details style="margin-top:16px"><summary>Legg til egen plate</summary>
+    <div class="field"><label for="npName">Navn</label><input class="inp" id="npName" placeholder="For eksempel Enhjørning"></div>
+    <div class="two"><div class="field"><label for="npCols">Kolonner</label><input class="inp num" id="npCols" type="number" inputmode="numeric" value="20"></div><div class="field"><label for="npRows">Rader</label><input class="inp num" id="npRows" type="number" inputmode="numeric" value="20"></div></div>
+    <button class="switch" id="npOff" role="switch" aria-checked="false">Forskjøvne rader<i></i></button>
+    <div class="btnrow"><button class="btn primary" id="npAdd">Lagre plate</button></div>
+  </details>`;
+  const draw=()=>{const q=$("#plQ").value.trim().toLowerCase();
+    $("#plList").innerHTML=groups.map(g=>{const l=ps.filter(p=>p.group===g&&(!q||p.name.toLowerCase().includes(q)));if(!l.length)return "";
+      return `<div class="group-h"><h2 style="font-size:1rem">${esc(g)}</h2></div><div class="pgrid">${l.map(p=>{const d=dimsOf(p);
+        return `<button class="ptile" data-p="${esc(p.id)}" aria-pressed="${p.id===S.lastPlate}">${plateIcon(p)}<b>${esc(p.name)}</b><small>${d.cols}×${d.rows}${p.est&&!S.plateAdj[p.id]?" · anslått":""}</small></button>`}).join("")}</div>`}).join("")
+      ||`<div class="empty">Ingen plater passer søket.</div>`};
+  draw(); $("#plQ").oninput=draw;
+  $("#plList").onclick=e=>{const t=e.target.closest("[data-p]");if(!t)return;S.lastPlate=t.dataset.p;save();closeSheet();renderScan()};
+  $("#npOff").onclick=e=>{const b=e.currentTarget;b.setAttribute("aria-checked",b.getAttribute("aria-checked")!=="true")};
+  $("#npAdd").onclick=()=>{const name=$("#npName").value.trim(),cols=Math.round(+$("#npCols").value),rows=Math.round(+$("#npRows").value);
+    if(!name||!(cols>=2)||!(rows>=2)){toast("Fyll inn navn, kolonner og rader");return}
+    const id="c"+Date.now(); S.customPlates.push({id,name,cols,rows,off:$("#npOff").getAttribute("aria-checked")==="true",icon:""});
+    S.lastPlate=id;save();closeSheet();renderScan();toast("Platen er lagret")};
+  openSheetRaw();
+}
+
+/* ---------- Bildegeometri og farger ---------- */
+function sq2q(q){ /* enhetskvadrat -> firkant (TL, TR, BR, BL) */
+  const [x0,y0]=q[0],[x1,y1]=q[1],[x2,y2]=q[2],[x3,y3]=q[3];
+  const sx=x0-x1+x2-x3, sy=y0-y1+y2-y3; let a,b,c,d,e,f,g=0,h=0;
+  if(Math.abs(sx)<1e-9&&Math.abs(sy)<1e-9){a=x1-x0;b=x3-x0;c=x0;d=y1-y0;e=y3-y0;f=y0}
+  else{const dx1=x1-x2,dx2=x3-x2,dy1=y1-y2,dy2=y3-y2,den=dx1*dy2-dx2*dy1;
+    g=(sx*dy2-dx2*sy)/den;h=(dx1*sy-sx*dy1)/den;a=x1-x0+g*x1;b=x3-x0+h*x3;c=x0;d=y1-y0+g*y1;e=y3-y0+h*y3;f=y0}
+  return (u,v)=>{const w=g*u+h*v+1;return [(a*u+b*v+c)/w,(d*u+e*v+f)/w]};
+}
+function cellUV(r,c,d){const den=(d.cols-1)+(d.off?.5:0);return [(c+(d.off&&r%2?.5:0))/den,r/(d.rows-1)]}
+const hexRgb=h=>[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+function lin(v){v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)}
+function lab(r,g,b){r=lin(r);g=lin(g);b=lin(b);
+  let x=(r*.4124+g*.3576+b*.1805)/.95047,y=r*.2126+g*.7152+b*.0722,z=(r*.0193+g*.1192+b*.9505)/1.08883;
+  const f=t=>t>.008856?Math.cbrt(t):7.787*t+16/116; x=f(x);y=f(y);z=f(z); return [116*y-16,500*(x-y),200*(y-z)]}
+function dE(a,b){const l=(a[0]-b[0])*.75;return Math.sqrt(l*l+(a[1]-b[1])**2+(a[2]-b[2])**2)}
+const med=a=>{const s=a.slice().sort((x,y)=>x-y);return s[s.length>>1]};
+const medColor=arr=>[0,1,2].map(k=>med(arr.map(c=>c[k])));
+function px(x,y){x=Math.max(0,Math.min(SC.W-1,x|0));y=Math.max(0,Math.min(SC.H-1,y|0));const i=(y*SC.W+x)*4,d=SC.data;return [d[i],d[i+1],d[i+2]]}
+function px5(x,y){return medColor([px(x,y),px(x-1.5,y),px(x+1.5,y),px(x,y-1.5),px(x,y+1.5)])}
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+
+/* ---------- Skanning ---------- */
+const SC={step:1,cells:null,zoom:26,mode:"photo",sel:-1};
+function openScan(){SC.step=1;SC.cells=null;SC.sel=-1;const b=$("#scClose");b.classList.remove("armed");b.textContent="Lukk";openOverlay("#scan");renderScan()}
+$("#scClose").onclick=e=>{const b=e.currentTarget;
+  if(SC.step>1&&!b.classList.contains("armed")){b.classList.add("armed");b.textContent="Forkast skanning?";setTimeout(()=>{b.classList.remove("armed");b.textContent="Lukk"},3000);return}
+  b.classList.remove("armed");b.textContent="Lukk";closeOverlay("#scan")};
+function palChoices(){const m=new Map();ALL.forEach(c=>m.set(c.brand+"|"+c.size,c.brand+" "+c.size));return [...m]}
+const camSvg=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
+function stepbar(){return `<div class="stepbar">${[1,2,3].map(i=>`<span class="${i<=SC.step?"on":""}"></span>`).join("")}</div>`}
+function renderScan(){
+  const B=$("#scBody");
+  if(SC.step===1){
+    const p=plateById(S.lastPlate),d=dimsOf(p);
+    if(!palChoices().some(([v])=>v===S.scanPal)) S.scanPal="Hama|Midi";
+    B.innerHTML=stepbar()+`<div class="eyebrow">${S.draftPlates?`Plate ${S.draftPlates+1} i prosjektet`:"Steg 1 av 3"}</div>
+    <h2 style="margin:4px 0 12px">Velg plate og ta bilde</h2>
+    <button class="platecard" id="scPlate">${plateIcon(p,40)}<span class="t"><small>Plate</small><b>${esc(p.name)}</b><small>${d.cols} × ${d.rows} pinner${d.off?" · forskjøvne rader":""}${p.est&&!S.plateAdj[p.id]?" · anslått":""}</small></span><span class="chip small">Bytt</span></button>
+    <div class="field"><label for="scPal">Perler på platen</label><select class="inp" id="scPal">${palChoices().map(([v,l])=>`<option value="${esc(v)}"${v===S.scanPal?" selected":""}>${esc(l)}</option>`).join("")}</select></div>
+    <div class="btnrow"><label class="btn primary">${camSvg}Ta bilde<input class="vh" type="file" accept="image/*" capture="environment" id="scCam"></label><label class="btn">Velg fra bilder<input class="vh" type="file" accept="image/*" id="scLib"></label></div>
+    <div class="card"><h2>Tips for godt resultat</h2><p>Legg platen på en mørk, ensfarget flate. Ta bildet rett ovenfra i godt dagslys, uten blits og uten skygger. Hele platen bør være med.</p></div>`;
+    $("#scPlate").onclick=openPlatePicker;
+    $("#scPal").onchange=e=>{S.scanPal=e.target.value;save()};
+    ["#scCam","#scLib"].forEach(id=>$(id).onchange=e=>{const f=e.target.files[0];if(f)loadImg(f);e.target.value=""});
+  } else if(SC.step===2){
+    const d=SC.dims;
+    B.innerHTML=stepbar()+`<div class="eyebrow">Steg 2 av 3</div><h2 style="margin:4px 0 6px">Plasser rutenettet</h2>
+    <p class="muted" style="margin:0 0 12px;font-size:.9rem">Dra de fire punktene til midten av hjørneperlene. På formede plater: dit hjørneperlene ville stått. De små prikkene skal treffe midten av hver perle.</p>
+    <div class="cv-wrap"><canvas id="cq" aria-label="Bilde av perleplaten med rutenett"></canvas></div>
+    <div class="adj">
+      <div class="stepper"><span>Kolonner</span><button data-ad="cols" data-d="-1" aria-label="Færre kolonner">−</button><b id="vcols">${d.cols}</b><button data-ad="cols" data-d="1" aria-label="Flere kolonner">+</button></div>
+      <div class="stepper"><span>Rader</span><button data-ad="rows" data-d="-1" aria-label="Færre rader">−</button><b id="vrows">${d.rows}</b><button data-ad="rows" data-d="1" aria-label="Flere rader">+</button></div>
+      <button class="switch" id="scOff" role="switch" aria-checked="${d.off}">Forskjøvne rader<i></i></button>
+    </div>
+    <div class="btnrow"><button class="btn" id="scNew">Nytt bilde</button><button class="btn primary" id="scRead">Les av perlene</button></div>`;
+    const keep=()=>{S.plateAdj[S.lastPlate]={...SC.dims};save()};
+    B.querySelector(".adj").onclick=e=>{const b=e.target.closest("[data-ad]");if(!b)return;const a=b.dataset.ad;
+      SC.dims[a]=Math.max(2,Math.min(120,SC.dims[a]+ +b.dataset.d));$("#v"+a).textContent=SC.dims[a];keep();drawQuad()};
+    $("#scOff").onclick=e=>{SC.dims.off=!SC.dims.off;e.currentTarget.setAttribute("aria-checked",SC.dims.off);keep();drawQuad()};
+    $("#scNew").onclick=()=>{SC.step=1;renderScan()};
+    $("#scRead").onclick=()=>{const b=$("#scRead");b.disabled=true;b.textContent="Leser av …";
+      setTimeout(()=>{analyze();buildRect();SC.step=3;SC.sel=-1;const avail=Math.min(innerWidth,760)-34;SC.zoom=Math.max(12,Math.min(44,Math.floor(avail/(SC.dims.cols+(SC.dims.off?.5:0)))));renderScan();$("#scan").scrollTop=0},30)};
+    requestAnimationFrame(setupQuad);
+  } else {
+    B.innerHTML=stepbar()+`<div class="eyebrow">Steg 3 av 3</div><h2 style="margin:4px 0 10px">Kontroller perlene</h2>
+    <div class="rvbar"><span id="rvPill"></span><span class="grow"></span>
+      <div class="seg" role="group" aria-label="Visning"><button id="mPhoto" aria-pressed="${SC.mode==="photo"}">Bilde</button><button id="mInt" aria-pressed="${SC.mode==="int"}">Tolkning</button></div>
+      <div class="seg" role="group" aria-label="Zoom"><button id="zOut" aria-label="Zoom ut">−</button><button id="zIn" aria-label="Zoom inn">+</button></div></div>
+    <div class="rv-scroll" id="rvScroll"><canvas id="rv" aria-label="Avlest perleplate. Trykk på en perle for å rette."></canvas></div>
+    <div id="rvBulk"></div>
+    <div class="btnrow"><button class="btn" id="rvNext">Neste usikre</button><button class="btn" id="rvAccept">Godta resten</button></div>
+    <div class="group-h"><h2>På denne platen</h2><span class="muted num" id="rvTot"></span></div>
+    <div id="rvSum"></div>
+    <div class="btnrow"><button class="btn" id="rvAdjust">Juster rutenett</button></div>
+    <div class="btnrow"><button class="btn" id="rvMore">Legg til · skann neste plate</button><button class="btn primary" id="rvDone">Legg til · ferdig</button></div>`;
+    $("#mPhoto").onclick=()=>{SC.mode="photo";renderScan()};
+    $("#mInt").onclick=()=>{SC.mode="int";renderScan()};
+    $("#zIn").onclick=()=>{SC.zoom=Math.min(44,SC.zoom+6);drawReview()};
+    $("#zOut").onclick=()=>{SC.zoom=Math.max(12,SC.zoom-6);drawReview()};
+    $("#rv").onclick=e=>{const r=e.currentTarget.getBoundingClientRect(),z=SC.zoom,d=SC.dims;
+      const row=Math.floor((e.clientY-r.top)/z); if(row<0||row>=d.rows)return;
+      const col=Math.floor(((e.clientX-r.left)-(d.off&&row%2?z/2:0))/z); if(col<0||col>=d.cols)return;
+      openCell(row*d.cols+col)};
+    $("#rvNext").onclick=()=>{let i=nextUnc(SC.sel,false);if(i<0)i=nextUnc(SC.sel,true);if(i<0){toast("Ingen usikre igjen");return}scrollToCell(i);openCell(i)};
+    $("#rvAccept").onclick=()=>{let n=0;SC.cells.forEach(c=>{if(c.unc){c.unc=false;c.white=false;n++}});reviewChanged();toast(n?`Godtok ${n} perler slik appen leste dem`:"Ingen usikre igjen")};
+    $("#rvAdjust").onclick=()=>{SC.step=2;renderScan()};
+    $("#rvMore").onclick=()=>{const n=commitPlate();SC.step=1;SC.cells=null;renderScan();$("#scan").scrollTop=0;toast(`${nf.format(n)} perler lagt til. Klar for neste plate.`)};
+    $("#rvDone").onclick=()=>{const n=commitPlate();closeOverlay("#scan");goTab("reg");toast(`${nf.format(n)} perler lagt til`)};
+    reviewChanged();
+  }
+}
+function loadImg(file){
+  const url=URL.createObjectURL(file), im=new Image();
+  im.onload=()=>{
+    const sc=Math.min(1,1600/Math.max(im.naturalWidth,im.naturalHeight));
+    const W=Math.round(im.naturalWidth*sc),H=Math.round(im.naturalHeight*sc);
+    const cv=document.createElement("canvas");cv.width=W;cv.height=H;
+    const cx=cv.getContext("2d",{willReadFrequently:true});cx.drawImage(im,0,0,W,H);
+    SC.src=cv;SC.W=W;SC.H=H;SC.data=cx.getImageData(0,0,W,H).data;URL.revokeObjectURL(url);
+    const p=plateById(S.lastPlate); SC.dims=dimsOf(p);
+    const asp=(SC.dims.cols-1+(SC.dims.off?.5:0))/((SC.dims.rows-1)*(SC.dims.off?.866:1));
+    let w=W*.7,h=w/asp; if(h>H*.7){h=H*.7;w=h*asp}
+    const x0=(W-w)/2,y0=(H-h)/2; SC.q=[[x0,y0],[x0+w,y0],[x0+w,y0+h],[x0,y0+h]];
+    SC.step=2;renderScan();
+  };
+  im.onerror=()=>{URL.revokeObjectURL(url);toast("Klarte ikke å åpne bildet. Prøv JPG eller PNG.")};
+  im.src=url;
+}
+let QD=null;
+function setupQuad(){
+  const cv=$("#cq"); if(!cv) return;
+  const avail=cv.parentElement.clientWidth, maxH=Math.max(260,innerHeight*.58);
+  SC.vs=Math.min(avail/SC.W,maxH/SC.H);
+  const w=Math.round(SC.W*SC.vs),h=Math.round(SC.H*SC.vs),dpr=devicePixelRatio||1;
+  cv.style.width=w+"px";cv.style.height=h+"px";cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
+  const toImg=e=>{const r=cv.getBoundingClientRect();return [(e.clientX-r.left)/SC.vs,(e.clientY-r.top)/SC.vs]};
+  cv.onpointerdown=e=>{const p=toImg(e);let bi=-1,bd=1e9;SC.q.forEach((q,i)=>{const d=Math.hypot(q[0]-p[0],q[1]-p[1]);if(d<bd){bd=d;bi=i}});
+    if(bd*SC.vs>70)return; QD={i:bi,s:p,o:[...SC.q[bi]]}; cv.setPointerCapture(e.pointerId); e.preventDefault(); drawQuad()};
+  cv.onpointermove=e=>{if(!QD)return;const p=toImg(e);
+    SC.q[QD.i]=[Math.max(0,Math.min(SC.W,QD.o[0]+p[0]-QD.s[0])),Math.max(0,Math.min(SC.H,QD.o[1]+p[1]-QD.s[1]))];drawQuad()};
+  cv.onpointerup=cv.onpointercancel=()=>{QD=null;drawQuad()};
+  drawQuad();
+}
+function drawQuad(){
+  const cv=$("#cq"); if(!cv||!SC.vs) return;
+  const ctx=cv.getContext("2d"),dpr=devicePixelRatio||1,vs=SC.vs,w=SC.W*vs,h=SC.H*vs,d=SC.dims;
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.drawImage(SC.src,0,0,w,h);
+  const H=sq2q(SC.q), a=SC.q.map(p=>[p[0]*vs,p[1]*vs]);
+  ctx.lineWidth=1.5;ctx.strokeStyle="rgba(255,255,255,.85)";ctx.beginPath();a.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.stroke();
+  const pitch=Math.hypot(a[1][0]-a[0][0],a[1][1]-a[0][1])/((d.cols-1)+(d.off?.5:0)), dr=Math.max(1.2,Math.min(4,pitch*.17));
+  ctx.fillStyle="#fff";ctx.strokeStyle="rgba(0,0,0,.75)";ctx.lineWidth=1;
+  for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++){const [u,v]=cellUV(r,c,d),[x,y]=H(u,v);ctx.beginPath();ctx.arc(x*vs,y*vs,dr,0,7);ctx.fill();ctx.stroke()}
+  a.forEach((p,i)=>{const act=QD&&QD.i===i;ctx.beginPath();ctx.arc(p[0],p[1],act?17:14,0,7);ctx.fillStyle="rgba(217,133,220,.35)";ctx.fill();
+    ctx.lineWidth=3;ctx.strokeStyle="#fff";ctx.stroke();ctx.beginPath();ctx.arc(p[0],p[1],2.5,0,7);ctx.fillStyle="#ff3b6b";ctx.fill()});
+  if(QD){ /* lupe */
+    const hp=SC.q[QD.i],R=Math.min(62,w/4),z=3.2,lx=hp[0]*vs<w/2?w-R-10:R+10,ly=hp[1]*vs<R*2.6?h-R-10:R+10;
+    const sw=2*R/(z*vs),sx=hp[0]-sw/2,sy=hp[1]-sw/2,k=2*R/sw;
+    const cx0=Math.max(0,sx),cy0=Math.max(0,sy),cx1=Math.min(SC.W,sx+sw),cy1=Math.min(SC.H,sy+sw);
+    ctx.save();ctx.beginPath();ctx.arc(lx,ly,R,0,7);ctx.clip();ctx.fillStyle="#000";ctx.fillRect(lx-R,ly-R,2*R,2*R);
+    if(cx1>cx0&&cy1>cy0) ctx.drawImage(SC.src,cx0,cy0,cx1-cx0,cy1-cy0,lx-R+(cx0-sx)*k,ly-R+(cy0-sy)*k,(cx1-cx0)*k,(cy1-cy0)*k);
+    ctx.restore();ctx.beginPath();ctx.arc(lx,ly,R,0,7);ctx.lineWidth=3;ctx.strokeStyle="#fff";ctx.stroke();
+    ctx.beginPath();ctx.moveTo(lx-12,ly);ctx.lineTo(lx+12,ly);ctx.moveTo(lx,ly-12);ctx.lineTo(lx,ly+12);ctx.lineWidth=2;ctx.strokeStyle="#ff3b6b";ctx.stroke();
+  }
+}
+function analyze(){
+  const d=SC.dims,H=sq2q(SC.q),den=(d.cols-1)+(d.off?.5:0),du=1/den,dv=1/(d.rows-1);
+  /* Hvitbalanse fra den hvite platen, lokalt per område (ujevnt lys) */
+  const lowC=c=>{const mx=Math.max(...c),mn=Math.min(...c);return mx>40&&(mx-mn)/mx<.18};
+  const topAvg=(arr,frac,minN)=>{if(arr.length<minN)return null;arr.sort((a,b)=>(b[0]+b[1]+b[2])-(a[0]+a[1]+a[2]));const t=arr.slice(0,Math.max(minN,Math.round(arr.length*frac)));return [0,1,2].map(k=>t.reduce((s,c)=>s+c[k],0)/t.length)};
+  const all=[];for(let i=0;i<=70;i++)for(let j=0;j<=70;j++){const [x,y]=H(-.03+i*1.06/70,-.03+j*1.06/70),c=px(x,y);if(lowC(c))all.push(c)}
+  let gw=topAvg(all,.12,10)||[235,235,235]; if(gw[0]+gw[1]+gw[2]<240) gw=[235,235,235];
+  const NB=6,wm=[];
+  for(let bi=0;bi<NB;bi++){wm.push([]);for(let bj=0;bj<NB;bj++){const arr=[];
+    for(let i=0;i<=16;i++)for(let j=0;j<=16;j++){const [x,y]=H(-.04+(bi+i/16)*1.08/NB,-.04+(bj+j/16)*1.08/NB),c=px(x,y);if(lowC(c))arr.push(c)}
+    let w=topAvg(arr,.15,8); const gl=gw[0]+gw[1]+gw[2];
+    if(!w||(w[0]+w[1]+w[2])<gl*.55||(w[0]+w[1]+w[2])>gl*1.3) w=gw; wm[bi].push(w)}}
+  const whiteAt=(u,v)=>{const fu=Math.max(0,Math.min(NB-1.001,(u+.04)/1.08*NB-.5)),fv=Math.max(0,Math.min(NB-1.001,(v+.04)/1.08*NB-.5));
+    const i=Math.floor(fu),j=Math.floor(fv),a=fu-i,b=fv-j,i2=Math.min(NB-1,i+1),j2=Math.min(NB-1,j+1);
+    return [0,1,2].map(k=>wm[i][j][k]*(1-a)*(1-b)+wm[i2][j][k]*a*(1-b)+wm[i][j2][k]*(1-a)*b+wm[i2][j2][k]*a*b)};
+  const normW=(c,w)=>c.map((v,k)=>Math.min(255,v*238/Math.max(1,w[k])));
+  const lum=c=>(c[0]+c[1]+c[2])/3;
+  /* Bakgrunn rundt platen */
+  const bgs=[];
+  for(let i=0;i<40;i++){const t=i/40;for(const [u,v] of [[t,-.1],[t,1.1],[-.1,t],[1.1,t]]){const [x,y]=H(u,v);if(x>=0&&y>=0&&x<SC.W&&y<SC.H)bgs.push(normW(px(x,y),gw))}}
+  let bgLab=null,bgWhite=true;
+  if(bgs.length>8){bgLab=lab(...medColor(bgs));bgWhite=bgLab[0]>78&&Math.hypot(bgLab[1],bgLab[2])<15}
+  /* Palett: farger du har på lager får et lite forsprang, spesialfarger du ikke har får et lite handikap */
+  const [pb,ps]=S.scanPal.split("|"), special=/clear|transl|glitter|neon|fluor|glow|pearl|metal|cloudy|gold|silver/i;
+  const cand=ALL.filter(c=>c.brand===pb&&c.size===ps).map(c=>{const L=lab(...hexRgb(c.hex));
+    return {k:c.k,lab:L,w:L[0]>78&&Math.hypot(L[1],L[2])<16,f:count(c.k)>0?-3:special.test(c.name)?3:0}});
+  cand.push({k:"EMPTY",lab:lab(238,238,238),w:true,f:0});
+  const cells=[],angs=d.off?[30,90,150,210,270,330]:[45,135,225,315],rad=d.off?.58:.68;
+  for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++){
+    const [u,v]=cellUV(r,c,d),[x,y]=H(u,v),A=H(u+du,v),B=H(u,v+dv),wl=whiteAt(u,v),nm=q=>normW(q,wl);
+    const p=(Math.hypot(A[0]-x,A[1]-y)+Math.hypot(B[0]-x,B[1]-y)/(d.off?.866:1))/2;
+    const smp=[];
+    for(const rr of [.31,.37,.42])for(let i=0;i<12;i++){const t=i*Math.PI/6+rr*3;smp.push(nm(px(x+Math.cos(t)*rr*p,y+Math.sin(t)*rr*p)))}
+    const col=medColor(smp),L=lab(...col);
+    let br=0;
+    for(const ag of angs){const t=ag*Math.PI/180,cc=nm(px5(x+Math.cos(t)*rad*p,y+Math.sin(t)*rad*p));if(lum(cc)>170&&Math.max(...cc)-Math.min(...cc)<45)br++}
+    const s=cand.map(q=>({k:q.k,w:q.w,d:Math.max(0,dE(L,q.lab)+q.f)})).sort((a,b)=>a.d-b.d);
+    let unc=s[0].d>22||s[1].d-s[0].d<5, white=unc&&s[0].w&&s[1].w;
+    let score=null;
+    if(s[0].w&&s[1].w){
+      /* Hvit perle eller tom pinne: en perle har skygge i hullet og langs kanten, en tom pinne er flat */
+      const rl=lum(col),cl=lum(nm(px5(x,y))),per=[];
+      for(let i=0;i<16;i++){const t=i*Math.PI/8;per.push(lum(nm(px(x+Math.cos(t)*.47*p,y+Math.sin(t)*.47*p))))}
+      score=(rl-med(per))+.3*Math.max(0,rl-cl);
+      unc=true;white=true;
+    }
+    cells.push({k:s[0].k,cands:s.slice(0,7),unc,white,sc:score,outLike:bgLab&&!bgWhite&&br<2&&dE(L,bgLab)<16});
+  }
+  /* Ruter utenfor platen: må henge sammen med kanten av rutenettet */
+  const N=cells.length,seen=new Uint8Array(N),st=[];
+  for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++)if(r===0||c===0||r===d.rows-1||c===d.cols-1){const i=r*d.cols+c;if(cells[i].outLike&&!seen[i]){seen[i]=1;st.push(i)}}
+  while(st.length){const i=st.pop(),r=Math.floor(i/d.cols),c=i%d.cols;
+    for(const [rr,cc] of [[r-1,c],[r+1,c],[r,c-1],[r,c+1]]){if(rr<0||cc<0||rr>=d.rows||cc>=d.cols)continue;const j=rr*d.cols+cc;if(!seen[j]&&cells[j].outLike){seen[j]=1;st.push(j)}}}
+  cells.forEach((c,i)=>{if(seen[i]){c.k="OUT";c.unc=false;c.white=false}});
+  /* Hvit eller tom: del i to grupper per bilde hvis forskjellen er tydelig */
+  const wc=cells.filter(c=>c.white&&c.k!=="OUT"&&c.sc!=null);
+  if(wc.length>=6){
+    const v=wc.map(c=>c.sc).sort((a,b)=>a-b),n=v.length;let best=-1,bt=0;
+    for(let i=1;i<n;i++){const a=v.slice(0,i),b=v.slice(i),ma=a.reduce((s,x)=>s+x,0)/a.length,mb=b.reduce((s,x)=>s+x,0)/b.length,bv=a.length*b.length*(mb-ma)**2;if(bv>best){best=bv;bt=i}}
+    const lo=v.slice(0,bt),hi=v.slice(bt),m=x=>x.reduce((s,y)=>s+y,0)/x.length,sd=x=>{const mm=m(x);return Math.sqrt(x.reduce((s,y)=>s+(y-mm)**2,0)/x.length)};
+    if(lo.length&&hi.length){const m1=m(lo),m2=m(hi),sep=(m2-m1)/(Math.sqrt((sd(lo)**2+sd(hi)**2)/2)+1),t=(m1+m2)/2,marg=(m2-m1)*.22;
+      if(sep>2.5&&m2-m1>8) wc.forEach(c=>{if(Math.abs(c.sc-t)<marg)return;
+        if(c.sc<t){c.k="EMPTY"}else{const wb=c.cands.find(q=>q.w&&q.k!=="EMPTY");if(!wb)return;c.k=wb.k}
+        c.unc=false;c.white=false});}
+  }
+  /* Usikre hvite står som tom plass inntil du velger noe annet */
+  cells.forEach(c=>{if(c.white)c.k="EMPTY"});
+  SC.cells=cells;
+}
+function buildRect(){
+  const d=SC.dims,cs=28,Wr=Math.round((d.cols+(d.off?.5:0))*cs),Hr=d.rows*cs,den=(d.cols-1)+(d.off?.5:0),H=sq2q(SC.q);
+  const cv=document.createElement("canvas");cv.width=Wr;cv.height=Hr;const cx=cv.getContext("2d"),img=cx.createImageData(Wr,Hr),o=img.data,s=SC.data;
+  for(let y=0;y<Hr;y++){const v=(y/cs-.5)/(d.rows-1);for(let x=0;x<Wr;x++){const u=(x/cs-.5)/den,[sx,sy]=H(u,v);
+    const X=Math.max(0,Math.min(SC.W-1,sx|0)),Y=Math.max(0,Math.min(SC.H-1,sy|0)),i=(Y*SC.W+X)*4,j=(y*Wr+x)*4;o[j]=s[i];o[j+1]=s[i+1];o[j+2]=s[i+2];o[j+3]=255}}
+  cx.putImageData(img,0,0);SC.rect=cv;SC.rcs=cs;
+}
+function cellXY(i,z){const d=SC.dims,r=Math.floor(i/d.cols),c=i%d.cols;return [(c+.5+(d.off&&r%2?.5:0))*z,(r+.5)*z]}
+function drawReview(){
+  const cv=$("#rv");if(!cv||!SC.cells)return;
+  const d=SC.dims,z=SC.zoom,W=(d.cols+(d.off?.5:0))*z,Hh=d.rows*z,dpr=devicePixelRatio||1;
+  cv.style.width=W+"px";cv.style.height=Hh+"px";cv.width=Math.round(W*dpr);cv.height=Math.round(Hh*dpr);
+  const ctx=cv.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);
+  const warn=cssv("--warn")||"#c2410c",acc=cssv("--accent")||"#7a1f7d",surf=cssv("--surface")||"#fff",line=cssv("--line")||"#ddd";
+  if(SC.mode==="photo")ctx.drawImage(SC.rect,0,0,W,Hh);else{ctx.fillStyle=surf;ctx.fillRect(0,0,W,Hh)}
+  SC.cells.forEach((cell,i)=>{const [x,y]=cellXY(i,z),k=cell.k,c=BY[k];
+    if(SC.mode==="int"){
+      if(k==="OUT"){}
+      else if(k==="EMPTY"){ctx.beginPath();ctx.arc(x,y,z*.12,0,7);ctx.fillStyle=line;ctx.fill()}
+      else if(c){ctx.beginPath();ctx.arc(x,y,z*.46,0,7);ctx.fillStyle="#"+c.hex;ctx.fill();ctx.beginPath();ctx.arc(x,y,z*.16,0,7);ctx.fillStyle=surf;ctx.fill()}
+    } else if(c){ctx.beginPath();ctx.arc(x,y,Math.max(2.5,z*.17),0,7);ctx.fillStyle="#"+c.hex;ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle="#fff";ctx.stroke()}
+    if(cell.unc){ctx.beginPath();ctx.arc(x,y,z*.46,0,7);ctx.lineWidth=Math.max(2,z*.09);ctx.strokeStyle=warn;ctx.setLineDash(cell.white?[3,3]:[]);ctx.stroke();ctx.setLineDash([])}
+    if(i===SC.sel){ctx.beginPath();ctx.arc(x,y,z*.5,0,7);ctx.lineWidth=3;ctx.strokeStyle=acc;ctx.stroke()}
+  });
+}
+function nextUnc(from,inclWhite){const n=SC.cells.length;for(let s=1;s<=n;s++){const i=((from<0?-1:from)+s+n)%n,c=SC.cells[i];if(c.unc&&(inclWhite||!c.white))return i}return -1}
+function scrollToCell(i){const sc=$("#rvScroll"),[x,y]=cellXY(i,SC.zoom);sc.scrollLeft=x-sc.clientWidth/2;sc.scrollTop=y-sc.clientHeight/2}
+function plateCounts(){const m={};SC.cells.forEach(c=>{if(c.k!=="EMPTY"&&c.k!=="OUT")m[c.k]=(m[c.k]||0)+1});return m}
+function reviewChanged(){
+  const u=SC.cells.filter(c=>c.unc&&!c.white).length,w=SC.cells.filter(c=>c.unc&&c.white).length;
+  $("#rvPill").innerHTML=u+w?`<span class="pill warn">${u?`${u} usikre`:""}${u&&w?" · ":""}${w?`${w} hvite/tomme`:""}</span>`:`<span class="pill ok">Alt er kontrollert</span>`;
+  $("#rvBulk").innerHTML=w?`<div class="bulk"><p><b>${w} usikre hvite eller tomme.</b> Hvite perler og tomme pinner er vanskelige å skille på en hvit plate. Avgjør alle på én gang, eller trykk på dem enkeltvis.</p>
+    <div class="btnrow"><button class="btn" id="bwEmpty">Alle er tomme</button><button class="btn" id="bwWhite">Alle er hvite perler</button></div></div>`:"";
+  if(w){
+    $("#bwEmpty").onclick=()=>{SC.cells.forEach(c=>{if(c.unc&&c.white){c.k="EMPTY";c.unc=c.white=false}});reviewChanged()};
+    $("#bwWhite").onclick=()=>{SC.cells.forEach(c=>{if(c.unc&&c.white){const wc=c.cands.find(q=>q.w&&q.k!=="EMPTY");if(wc)c.k=wc.k;c.unc=c.white=false}});reviewChanged()};
+  }
+  const m=plateCounts(),ks=Object.keys(m).sort((a,b)=>m[b]-m[a]),t=ks.reduce((s,k)=>s+m[k],0);
+  $("#rvTot").textContent=`${nf.format(t)} perler · ${ks.length} farger`;
+  $("#rvSum").innerHTML=ks.length?`<div class="list">${ks.map(k=>{const c=BY[k];return `<div class="row">${bead(c)}<span class="info"><b>${esc(c.num)} ${esc(c.name)}</b><span>${tracked(k)?`${nf.format(count(k))} på lager`:"Ikke registrert på lageret"}</span></span><span class="right">${nf.format(m[k])}</span></div>`}).join("")}</div>`
+    :`<div class="empty">Appen fant ingen perler. Sjekk at rutenettet ligger riktig.</div>`;
+  drawReview();
+}
+function openCell(i){
+  SC.sel=i;drawReview();curK=null;
+  const cell=SC.cells[i],d=SC.dims,r=Math.floor(i/d.cols),c=i%d.cols;
+  const lbl=k=>k==="EMPTY"?"tom plass":k==="OUT"?"utenfor platen":`${BY[k].num} ${BY[k].name}`;
+  const cs=cell.cands.filter(q=>q.k!=="EMPTY").slice(0,4);
+  $("#sheet").innerHTML=`<div class="grab"></div><h2 id="shTitle">Rad ${r+1}, kolonne ${c+1}</h2>
+  <canvas class="crop" id="crop" width="400" height="400" aria-label="Utsnitt av bildet"></canvas>
+  <div class="guess">Appen leste: <b>${esc(lbl(cell.k))}</b>${cell.unc?" (usikker)":""}</div>
+  <div class="cands">${cs.map(q=>{const b=BY[q.k];return `<button class="cand${q.k===cell.k?" best":""}" data-pick="${esc(q.k)}">${bead(b)}<span class="l"><b>${esc(b.num)}</b>${esc(b.name)}</span></button>`}).join("")}
+    <button class="cand plain${cell.k==="EMPTY"?" best":""}" data-pick="EMPTY">Tom plass</button>
+    <button class="cand plain${cell.k==="OUT"?" best":""}" data-pick="OUT">Utenfor platen</button></div>
+  <details style="margin-top:12px" id="allDet"><summary>Alle farger</summary><label class="search"><input id="allQ" type="search" placeholder="Søk nummer eller navn …" aria-label="Søk farger" autocomplete="off"></label><div class="allc" id="allc"></div></details>
+  <div class="btnrow"><button class="btn" id="cellClose">Lukk</button></div>`;
+  const cr=$("#crop"),cx=cr.getContext("2d"),z=SC.rcs,[mx,my]=cellXY(i,z),span=z*5;
+  cx.fillStyle="#111";cx.fillRect(0,0,400,400);
+  const sx=mx-span/2,sy=my-span/2,k=400/span,x0=Math.max(0,sx),y0=Math.max(0,sy),x1=Math.min(SC.rect.width,sx+span),y1=Math.min(SC.rect.height,sy+span);
+  if(x1>x0&&y1>y0)cx.drawImage(SC.rect,x0,y0,x1-x0,y1-y0,(x0-sx)*k,(y0-sy)*k,(x1-x0)*k,(y1-y0)*k);
+  cx.beginPath();cx.arc(200,200,z*.55*k,0,7);cx.lineWidth=5;cx.strokeStyle="#ff3b6b";cx.stroke();
+  const [pb,ps]=S.scanPal.split("|"),pal=ALL.filter(x=>x.brand===pb&&x.size===ps).sort((a,b)=>a.num.localeCompare(b.num,"nb",{numeric:true}));
+  const drawAll=()=>{const q=$("#allQ").value.trim().toLowerCase();$("#allc").innerHTML=pal.filter(x=>!q||x.num.toLowerCase().includes(q)||x.name.toLowerCase().includes(q)).map(x=>`<button data-pick="${esc(x.k)}" title="${esc(x.name)}">${bead(x)}${esc(x.num)}</button>`).join("")};
+  $("#allDet").ontoggle=()=>{if($("#allDet").open&&!$("#allc").innerHTML)drawAll()};
+  $("#allQ").oninput=drawAll;
+  $("#sheet").onclick=e=>{const b=e.target.closest("[data-pick]");if(b)setCell(i,b.dataset.pick)};
+  $("#cellClose").onclick=()=>{$("#sheet").onclick=null;closeSheet()};
+  openSheetRaw();
+}
+function setCell(i,k){
+  const c=SC.cells[i],wasWhite=c.white;c.k=k;c.unc=false;c.white=false;
+  reviewChanged();
+  const n=nextUnc(i,wasWhite);
+  if(n>=0){scrollToCell(n);openCell(n)}else{$("#sheet").onclick=null;SC.sel=-1;closeSheet();drawReview()}
+}
+function commitPlate(){let n=0;SC.cells.forEach(c=>{if(c.k!=="EMPTY"&&c.k!=="OUT"){S.draft[c.k]=(S.draft[c.k]||0)+1;n++}});S.draftPlates=(S.draftPlates||0)+1;save();return n}
+
 /* ---------- Faner og felles ---------- */
 let tab="lager";
-document.querySelector(".tabs").onclick=e=>{const b=e.target.closest("[data-tab]");if(!b)return;tab=b.dataset.tab;
-  document.querySelectorAll(".tabs [data-tab]").forEach(x=>x.setAttribute("aria-selected",x===b));
-  ["lager","handle","inst"].forEach(t=>$("#v-"+t).hidden=t!==tab); refresh(); window.scrollTo(0,0)};
-function refresh(){renderStats(); if(tab==="lager")renderLager(); if(tab==="handle")renderShop(); if(tab==="inst")renderInst()}
+function goTab(name){tab=name;document.querySelectorAll(".tabs [data-tab]").forEach(x=>x.setAttribute("aria-selected",x.dataset.tab===name));
+  ["lager","reg","handle","inst"].forEach(t=>$("#v-"+t).hidden=t!==tab); refresh(); window.scrollTo(0,0)}
+document.querySelector(".tabs").onclick=e=>{const b=e.target.closest("[data-tab]");if(b)goTab(b.dataset.tab)};
+function refresh(){renderStats(); if(tab==="lager")renderLager(); if(tab==="reg")renderReg(); if(tab==="handle")renderShop(); if(tab==="inst")renderInst(); if(!$("#pick").hidden)renderPick()}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1800)}
 
 /* Eksempeldata første gang, tydelig merket, slik at appen ikke åpner tom */
