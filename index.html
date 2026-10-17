@@ -895,18 +895,42 @@ function measure(){
   let bgLab=null,bgWhite=true;
   if(bgs.length>8){bgLab=lab(...medColor(bgs));bgWhite=bgLab[0]>78&&Math.hypot(bgLab[1],bgLab[2])<15}
   const feat=[],angs=d.off?[30,90,150,210,270,330]:[45,135,225,315],rad=d.off?.58:.68;
+  /* Finn midten av hver perle. Ringen rundt hullet er ensfarget når vi treffer midt på,
+     og blir urolig når den krysser hull og mellomrom. Søk grovt, glatt ut med naboene, søk fint. */
+  const D=SC.data,W=SC.W,Hh=SC.H,CS=[],SN=[];
+  for(let i=0;i<12;i++){CS.push(Math.cos(i*Math.PI/6));SN.push(Math.sin(i*Math.PI/6))}
+  const ringCost=(x,y,p)=>{let s0=0,s1=0,s2=0,q0=0,q1=0,q2=0,n=0;
+    for(const rr of [.32,.4])for(let i=0;i<12;i++){let X=(x+CS[i]*rr*p)|0,Y=(y+SN[i]*rr*p)|0;
+      if(X<0)X=0;else if(X>=W)X=W-1;if(Y<0)Y=0;else if(Y>=Hh)Y=Hh-1;const j=(Y*W+X)*4,a=D[j],b=D[j+1],c=D[j+2];
+      s0+=a;s1+=b;s2+=c;q0+=a*a;q1+=b*b;q2+=c*c;n++}
+    return (q0-s0*s0/n)+(q1-s1*s1/n)+(q2-s2*s2/n)};
+  const geo=[];
   for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++){
-    const [u,v]=cellUV(r,c,d),[x,y]=H(u,v),A=H(u+du,v),B=H(u,v+dv),wl=whiteAt(u,v),nm=q=>normW(q,wl);
-    const p=(Math.hypot(A[0]-x,A[1]-y)+Math.hypot(B[0]-x,B[1]-y)/(d.off?.866:1))/2;
+    const [u,v]=cellUV(r,c,d),[x,y]=H(u,v),A=H(u+du,v),B=H(u,v+dv);
+    geo.push({u,v,x,y,p:(Math.hypot(A[0]-x,A[1]-y)+Math.hypot(B[0]-x,B[1]-y)/(d.off?.866:1))/2});
+  }
+  const search=(cx,cy,range,step,pen)=>geo.map((g,i)=>{const bx=cx?cx[i][0]:0,by=cy?cy[i][1]:0;let bo=[bx,by],bc=1e18;
+    for(let ox=-range;ox<=range+1e-9;ox+=step)for(let oy=-range;oy<=range+1e-9;oy+=step){
+      const X=bx+ox,Y=by+oy,cost=ringCost(g.x+X*g.p,g.y+Y*g.p,g.p)*(1+pen*(ox*ox+oy*oy)/(range*range||1));
+      if(cost<bc){bc=cost;bo=[X,Y]}}
+    return bo});
+  const smooth=(o,R)=>o.map((_,i)=>{const r=Math.floor(i/d.cols),c=i%d.cols,xs=[],ys=[];
+    for(let a=-R;a<=R;a++)for(let b=-R;b<=R;b++){const rr=r+a,cc=c+b;if(rr<0||cc<0||rr>=d.rows||cc>=d.cols)continue;const q=o[rr*d.cols+cc];xs.push(q[0]);ys.push(q[1])}
+    return [med(xs),med(ys)]});
+  let o1=search(null,null,.45,.09,.3); o1=smooth(o1,2);
+  let o2=search(o1,o1,.12,.04,.5);
+  const sm=smooth(o2,1);
+  for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++){
+    const gi=geo[r*d.cols+c],o=sm[r*d.cols+c],p=gi.p,u=gi.u,v=gi.v,x=gi.x+o[0]*p,y=gi.y+o[1]*p,wl=whiteAt(u,v),nm=q=>normW(q,wl);
     const smp=[];
-    for(const rr of [.31,.37,.42])for(let i=0;i<12;i++){const t=i*Math.PI/6+rr*3;smp.push(nm(px(x+Math.cos(t)*rr*p,y+Math.sin(t)*rr*p)))}
+    for(const rr of [.3,.35,.4])for(let i=0;i<16;i++){const t=i*Math.PI/8+rr*3;smp.push(nm(px(x+Math.cos(t)*rr*p,y+Math.sin(t)*rr*p)))}
     const col=medColor(smp),L=lab(...col);
     let br=0;
     for(const ag of angs){const t=ag*Math.PI/180,cc=nm(px5(x+Math.cos(t)*rad*p,y+Math.sin(t)*rad*p));if(lum(cc)>170&&Math.max(...cc)-Math.min(...cc)<45)br++}
     /* Hvit perle eller tom pinne: en perle har skygge i hullet og langs kanten, en tom pinne er flat */
     const rl=lum(col),cl=lum(nm(px5(x,y))),per=[];
     for(let i=0;i<16;i++){const t=i*Math.PI/8;per.push(lum(nm(px(x+Math.cos(t)*.47*p,y+Math.sin(t)*.47*p))))}
-    feat.push({L,ws:(rl-med(per))+.3*Math.max(0,rl-cl),outLike:bgLab&&!bgWhite&&br<2&&dE(L,bgLab)<16,out:false});
+    feat.push({L,col,ws:(rl-med(per))+.3*Math.max(0,rl-cl),outLike:bgLab&&!bgWhite&&br<2&&dE(L,bgLab)<16,out:false});
   }
   /* Ruter utenfor platen: må henge sammen med kanten av rutenettet */
   const N=feat.length,seen=new Uint8Array(N),st=[];
@@ -924,21 +948,38 @@ function split2(vals){ /* del verdier i to grupper; ok=true bare når skillet er
   const m1=m(lo),m2=m(hi),sep=(m2-m1)/(Math.sqrt((sd(lo)**2+sd(hi)**2)/2)+1);
   return {ok:sep>2.5&&m2-m1>8,t:(m1+m2)/2,marg:(m2-m1)*.22,hi:hi.length};
 }
+/* Lær hvordan kamera og lys gjengir fargene: tilpass lys/kontrast per kanal mot sikre treff */
+function calibrate(cands,iter){
+  let g=[1,1,1],o=[0,0,0];const conv=c=>c.map((v,k)=>Math.max(0,Math.min(255,v*g[k]+o[k])));
+  const feats=SC.feat.filter(f=>!f.out);
+  for(let it=0;it<iter;it++){
+    const pairs=[];
+    for(const f of feats){const L=lab(...conv(f.col));let d1=1e9,d2=1e9,b=null;for(const q of cands){const d=dE(L,q.lab);if(d<d1){d2=d1;d1=d;b=q}else if(d<d2)d2=d}
+      if(b&&b.k!=="EMPTY"&&(d2-d1)/(d2+d1+1)>.25)pairs.push([f.col,b.rgb])}
+    if(pairs.length<12)break;
+    for(let k=0;k<3;k++){const xs=pairs.map(p=>p[0][k]),ys=pairs.map(p=>p[1][k]),n=xs.length,mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;
+      let sxy=0,sxx=0;for(let i=0;i<n;i++){sxy+=(xs[i]-mx)*(ys[i]-my);sxx+=(xs[i]-mx)**2}
+      let gg=sxx>50?sxy/sxx:1;gg=Math.max(.75,Math.min(1.6,gg));g[k]=gg;o[k]=Math.max(-50,Math.min(50,my-gg*mx))}
+  }
+  return conv;
+}
 const isWhiteLab=L=>L[0]>78&&Math.hypot(L[1],L[2])<16;
 const EMPTY_LAB=lab(238,238,238);
 /* Foreslå farger ut fra bildet, ved å sammenligne med hele fargekartet */
 function suggestColors(){
   const [pb,ps]=S.scanPal.split("|"),special=/clear|transl|glitter|neon|fluor|glow|pearl|metal|cloudy|gold|silver/i;
   const cand=ALL.filter(c=>c.brand===pb&&c.size===ps).map(c=>({k:c.k,lab:lab(...hexRgb(c.hex)),f:count(c.k)>0?-3:special.test(c.name)?3:0}));
-  cand.push({k:"EMPTY",lab:EMPTY_LAB,f:0});
+  cand.forEach(q=>q.rgb=hexRgb(BY[q.k].hex));
+  cand.push({k:"EMPTY",lab:EMPTY_LAB,f:0,rgb:[238,238,238]});
+  const conv=calibrate(cand,2);
   const cnt={},wcnt={},wsv=[];let beads=0;
-  SC.feat.forEach(f=>{if(f.out)return;let bk=null,bd=1e9;for(const q of cand){const d=dE(f.L,q.lab)+q.f;if(d<bd){bd=d;bk=q.k}}
+  SC.feat.forEach(f=>{if(f.out)return;const FL=lab(...conv(f.col));let bk=null,bd=1e9;for(const q of cand){const d=dE(FL,q.lab)+q.f;if(d<bd){bd=d;bk=q.k}}
     if(bk==="EMPTY"||isWhiteLab(lab(...hexRgb(BY[bk].hex)))){wsv.push(f.ws);if(bk!=="EMPTY")wcnt[bk]=(wcnt[bk]||0)+1;return}
     cnt[bk]=(cnt[bk]||0)+1;beads++});
   /* Hvite perler på hvit plate: bruk skyggen i hullet til å anslå om det finnes noen */
   const wk=Object.keys(wcnt).sort((a,b)=>wcnt[b]-wcnt[a])[0]||(ALL.find(c=>c.brand===pb&&c.size===ps&&isWhiteLab(lab(...hexRgb(c.hex))))||{}).k;
   const sp=split2(wsv);SC.whiteKey=wk;SC.whiteUnknown=false;
-  if(wk){if(sp.ok&&sp.hi>=2){cnt[wk]=sp.hi;beads+=sp.hi}else SC.whiteUnknown=true}
+  if(wk&&wsv.length>=3){if(sp.ok&&sp.hi>=2){cnt[wk]=sp.hi;beads+=sp.hi}else SC.whiteUnknown=true}
   const order=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]),min=Math.max(2,Math.round(beads*.01)),strong=[],maybe=[];
   const labOf=k=>lab(...hexRgb(BY[k].hex));
   for(const k of order){
@@ -950,12 +991,14 @@ function suggestColors(){
 }
 /* Les av med bare de valgte fargene */
 function classify(keys){
-  const cand=keys.filter(k=>BY[k]).map(k=>{const L=lab(...hexRgb(BY[k].hex));return {k,lab:L,w:isWhiteLab(L)}});
-  cand.push({k:"EMPTY",lab:EMPTY_LAB,w:true});
+  const cand=keys.filter(k=>BY[k]).map(k=>{const rgb=hexRgb(BY[k].hex),L=lab(...rgb);return {k,lab:L,rgb,w:isWhiteLab(L)}});
+  cand.push({k:"EMPTY",lab:EMPTY_LAB,rgb:[238,238,238],w:true});
+  const conv=calibrate(cand,3);
   const cells=SC.feat.map(f=>{
     if(f.out)return {k:"OUT",cands:[],unc:false,white:false,sc:null};
-    const s=cand.map(q=>({k:q.k,w:q.w,d:dE(f.L,q.lab)})).sort((a,b)=>a.d-b.d);
-    let unc=s[0].d>32||(s.length>1&&s[1].d-s[0].d<4),white=false,sc=null;
+    const FL=lab(...conv(f.col)),s=cand.map(q=>({k:q.k,w:q.w,d:dE(FL,q.lab)})).sort((a,b)=>a.d-b.d);
+    /* Usikker bare når to av fargene er omtrent like nære, eller ingen passer i det hele tatt */
+    let unc=s.length>1&&((s[1].d-s[0].d)/(s[1].d+s[0].d+1)<.12||s[0].d>55),white=false,sc=null;
     if(s.length>1&&s[0].w&&s[1].w){unc=true;white=true;sc=f.ws}
     return {k:s[0].k,cands:s,unc,white,sc};
   });
