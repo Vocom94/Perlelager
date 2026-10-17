@@ -218,6 +218,14 @@ textarea.inp{min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size
 .allc{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:10px 6px;margin-top:10px}
 .allc button{border:0;background:transparent;padding:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72rem;font-weight:700;font-variant-numeric:tabular-nums}
 .allc .bead{width:38px}
+.ctile{position:relative;padding-right:34px}
+.ctile .l small{display:block;color:var(--muted);font-size:.76rem;font-variant-numeric:tabular-nums}
+.ctile .chk{position:absolute;right:10px;top:50%;width:20px;height:20px;margin-top:-10px;border-radius:6px;border:2px solid var(--line)}
+.ctile.on{border-color:var(--accent);background:var(--accent-soft)}
+.ctile.on .chk{background:var(--accent);border-color:var(--accent)}
+.ctile.on .chk::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid var(--accent-ink);border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.ctile:not(.on){opacity:.75}
+.allc button.on .bead{box-shadow:0 0 0 3px var(--accent)}
 .draft-row .stepper{padding:2px 4px;background:var(--bg);gap:4px}
 .draft-row .stepper button{width:30px;height:30px}
 .draft-row .stepper input{width:54px}
@@ -359,7 +367,7 @@ const nf = new Intl.NumberFormat("nb-NO");
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-function blank(){return {stock:{},limits:{},manual:{},custom:[],draft:{},draftPlates:0,plateAdj:{},customPlates:[],scanPal:"Hama|Midi",lastPlate:"sq-l",settings:{limit:500,brand:"Hama",size:"Midi",view:"grid",sort:"num",mine:false}}}
+function blank(){return {stock:{},limits:{},manual:{},custom:[],draft:{},draftPlates:0,plateAdj:{},customPlates:[],scanPal:"Hama|Midi",lastPlate:"sq-l",lastColors:[],settings:{limit:500,brand:"Hama",size:"Midi",view:"grid",sort:"num",mine:false}}}
 function load(){
   try{const d=JSON.parse(localStorage.getItem(LS)); if(d&&d.stock){const b=blank(); return {...b,...d,settings:{...b.settings,...d.settings}}}}catch(e){}
   return blank();
@@ -726,13 +734,13 @@ $("#scClose").onclick=e=>{const b=e.currentTarget;
   b.classList.remove("armed");b.textContent="Lukk";closeOverlay("#scan")};
 function palChoices(){const m=new Map();ALL.forEach(c=>m.set(c.brand+"|"+c.size,c.brand+" "+c.size));return [...m]}
 const camSvg=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
-function stepbar(){return `<div class="stepbar">${[1,2,3].map(i=>`<span class="${i<=SC.step?"on":""}"></span>`).join("")}</div>`}
+function stepbar(){return `<div class="stepbar">${[1,2,3,4].map(i=>`<span class="${i<=SC.step?"on":""}"></span>`).join("")}</div>`}
 function renderScan(){
-  const B=$("#scBody");
+  const B=$("#scBody");B.onclick=null;
   if(SC.step===1){
     const p=plateById(S.lastPlate),d=dimsOf(p);
     if(!palChoices().some(([v])=>v===S.scanPal)) S.scanPal="Hama|Midi";
-    B.innerHTML=stepbar()+`<div class="eyebrow">${S.draftPlates?`Plate ${S.draftPlates+1} i prosjektet`:"Steg 1 av 3"}</div>
+    B.innerHTML=stepbar()+`<div class="eyebrow">${S.draftPlates?`Plate ${S.draftPlates+1} i prosjektet`:"Steg 1 av 4"}</div>
     <h2 style="margin:4px 0 12px">Velg plate og ta bilde</h2>
     <button class="platecard" id="scPlate">${plateIcon(p,40)}<span class="t"><small>Plate</small><b>${esc(p.name)}</b><small>${d.cols} × ${d.rows} pinner${d.off?" · forskjøvne rader":""}${p.est&&!S.plateAdj[p.id]?" · anslått":""}</small></span><span class="chip small">Bytt</span></button>
     <div class="field"><label for="scPal">Perler på platen</label><select class="inp" id="scPal">${palChoices().map(([v,l])=>`<option value="${esc(v)}"${v===S.scanPal?" selected":""}>${esc(l)}</option>`).join("")}</select></div>
@@ -743,7 +751,7 @@ function renderScan(){
     ["#scCam","#scLib"].forEach(id=>$(id).onchange=e=>{const f=e.target.files[0];if(f)loadImg(f);e.target.value=""});
   } else if(SC.step===2){
     const d=SC.dims;
-    B.innerHTML=stepbar()+`<div class="eyebrow">Steg 2 av 3</div><h2 style="margin:4px 0 6px">Plasser rutenettet</h2>
+    B.innerHTML=stepbar()+`<div class="eyebrow">Steg 2 av 4</div><h2 style="margin:4px 0 6px">Plasser rutenettet</h2>
     <p class="muted" style="margin:0 0 12px;font-size:.9rem">Dra de fire punktene til midten av hjørneperlene. På formede plater: dit hjørneperlene ville stått. De små prikkene skal treffe midten av hver perle.</p>
     <div class="cv-wrap"><canvas id="cq" aria-label="Bilde av perleplaten med rutenett"></canvas></div>
     <div class="adj">
@@ -751,17 +759,39 @@ function renderScan(){
       <div class="stepper"><span>Rader</span><button data-ad="rows" data-d="-1" aria-label="Færre rader">−</button><b id="vrows">${d.rows}</b><button data-ad="rows" data-d="1" aria-label="Flere rader">+</button></div>
       <button class="switch" id="scOff" role="switch" aria-checked="${d.off}">Forskjøvne rader<i></i></button>
     </div>
-    <div class="btnrow"><button class="btn" id="scNew">Nytt bilde</button><button class="btn primary" id="scRead">Les av perlene</button></div>`;
+    <div class="btnrow"><button class="btn" id="scNew">Nytt bilde</button><button class="btn primary" id="scRead">Finn fargene</button></div>`;
     const keep=()=>{S.plateAdj[S.lastPlate]={...SC.dims};save()};
     B.querySelector(".adj").onclick=e=>{const b=e.target.closest("[data-ad]");if(!b)return;const a=b.dataset.ad;
       SC.dims[a]=Math.max(2,Math.min(120,SC.dims[a]+ +b.dataset.d));$("#v"+a).textContent=SC.dims[a];keep();drawQuad()};
     $("#scOff").onclick=e=>{SC.dims.off=!SC.dims.off;e.currentTarget.setAttribute("aria-checked",SC.dims.off);keep();drawQuad()};
     $("#scNew").onclick=()=>{SC.step=1;renderScan()};
-    $("#scRead").onclick=()=>{const b=$("#scRead");b.disabled=true;b.textContent="Leser av …";
-      setTimeout(()=>{analyze();buildRect();SC.step=3;SC.sel=-1;const avail=Math.min(innerWidth,760)-34;SC.zoom=Math.max(12,Math.min(44,Math.floor(avail/(SC.dims.cols+(SC.dims.off?.5:0)))));renderScan();$("#scan").scrollTop=0},30)};
+    $("#scRead").onclick=()=>{const b=$("#scRead");b.disabled=true;b.textContent="Ser på bildet …";
+      setTimeout(()=>{measure();buildRect();suggestColors();
+        const prev=S.draftPlates>0?(S.lastColors||[]).filter(k=>BY[k]&&k.startsWith(S.scanPal+"|")):[];
+        SC.colors=new Set([...SC.strong,...prev]);SC.step=3;renderScan();$("#scan").scrollTop=0},30)};
     requestAnimationFrame(setupQuad);
+  } else if(SC.step===3){
+    const sel=SC.colors,shown=[...new Set([...SC.strong,...[...sel].filter(k=>!SC.maybe.includes(k))])],est=k=>k===SC.whiteKey&&SC.whiteUnknown?"kan ikke telles sikkert":SC.est[k]?`ca. ${nf.format(SC.est[k])}`:"ikke funnet";
+    const tile=k=>{const c=BY[k];return `<button class="cand ctile${sel.has(k)?" on":""}" data-col="${esc(k)}" aria-pressed="${sel.has(k)}">${bead(c)}<span class="l"><b>${esc(c.num)} ${esc(c.name)}</b><small>${est(k)}</small></span><span class="chk" aria-hidden="true"></span></button>`};
+    B.innerHTML=stepbar()+`<div class="eyebrow">Steg 3 av 4</div><h2 style="margin:4px 0 6px">Farger på platen</h2>
+    <p class="muted" style="margin:0 0 4px;font-size:.9rem">Appen leser bare av med fargene som er haket av. Fjern de som er feil og legg til de som mangler.${S.draftPlates>0&&(S.lastColors||[]).length?" Fargene fra forrige plate er tatt med.":""}</p>
+    <div class="cands">${shown.map(tile).join("")||`<div class="empty">Appen fant ingen tydelige farger. Legg dem til under.</div>`}</div>
+    ${SC.maybe.length?`<div class="group-h"><h2 style="font-size:1rem">Kanskje også</h2><span class="muted" style="font-size:.8rem">få treff, ofte skygger</span></div><div class="cands" style="margin-top:0">${SC.maybe.map(tile).join("")}</div>`:""}
+    <details style="margin-top:14px" id="colDet"><summary>Legg til en annen farge</summary><label class="search"><input id="colQ" type="search" placeholder="Søk nummer eller navn …" aria-label="Søk farger" autocomplete="off"></label><div class="allc" id="colAll"></div></details>
+    <div class="btnrow"><button class="btn" id="colBack">Juster rutenett</button><button class="btn primary" id="colGo"${sel.size?"":" disabled"}>Les av med ${sel.size} ${sel.size===1?"farge":"farger"}</button></div>`;
+    const [pb,ps]=S.scanPal.split("|"),pal=ALL.filter(x=>x.brand===pb&&x.size===ps).sort((a,b)=>a.num.localeCompare(b.num,"nb",{numeric:true}));
+    const drawAll=()=>{const q=$("#colQ").value.trim().toLowerCase();$("#colAll").innerHTML=pal.filter(x=>!q||x.num.toLowerCase().includes(q)||x.name.toLowerCase().includes(q)).map(x=>`<button data-col="${esc(x.k)}" aria-pressed="${sel.has(x.k)}" title="${esc(x.name)}" class="${sel.has(x.k)?"on":""}">${bead(x)}${esc(x.num)}</button>`).join("")};
+    $("#colDet").ontoggle=()=>{if($("#colDet").open)drawAll()};
+    $("#colQ").oninput=drawAll;
+    B.onclick=e=>{const t=e.target.closest("[data-col]");if(!t||SC.step!==3)return;const k=t.dataset.col;
+      if(sel.has(k))sel.delete(k);else sel.add(k);
+      const open=$("#colDet").open,q=$("#colQ").value,y=$("#scan").scrollTop;renderScan();
+      if(open){$("#colDet").open=true;$("#colQ").value=q;drawAll()}$("#scan").scrollTop=y};
+    $("#colBack").onclick=()=>{SC.step=2;renderScan()};
+    $("#colGo").onclick=()=>{const keys=[...sel];S.lastColors=keys;save();classify(keys);SC.step=4;SC.sel=-1;
+      const avail=Math.min(innerWidth,760)-34;SC.zoom=Math.max(12,Math.min(44,Math.floor(avail/(SC.dims.cols+(SC.dims.off?.5:0)))));renderScan();$("#scan").scrollTop=0};
   } else {
-    B.innerHTML=stepbar()+`<div class="eyebrow">Steg 3 av 3</div><h2 style="margin:4px 0 10px">Kontroller perlene</h2>
+    B.innerHTML=stepbar()+`<div class="eyebrow">Steg 4 av 4</div><h2 style="margin:4px 0 10px">Kontroller perlene</h2>
     <div class="rvbar"><span id="rvPill"></span><span class="grow"></span>
       <div class="seg" role="group" aria-label="Visning"><button id="mPhoto" aria-pressed="${SC.mode==="photo"}">Bilde</button><button id="mInt" aria-pressed="${SC.mode==="int"}">Tolkning</button></div>
       <div class="seg" role="group" aria-label="Zoom"><button id="zOut" aria-label="Zoom ut">−</button><button id="zIn" aria-label="Zoom inn">+</button></div></div>
@@ -770,7 +800,7 @@ function renderScan(){
     <div class="btnrow"><button class="btn" id="rvNext">Neste usikre</button><button class="btn" id="rvAccept">Godta resten</button></div>
     <div class="group-h"><h2>På denne platen</h2><span class="muted num" id="rvTot"></span></div>
     <div id="rvSum"></div>
-    <div class="btnrow"><button class="btn" id="rvAdjust">Juster rutenett</button></div>
+    <div class="btnrow"><button class="btn" id="rvAdjust">Juster rutenett</button><button class="btn" id="rvColors">Endre farger</button></div>
     <div class="btnrow"><button class="btn" id="rvMore">Legg til · skann neste plate</button><button class="btn primary" id="rvDone">Legg til · ferdig</button></div>`;
     $("#mPhoto").onclick=()=>{SC.mode="photo";renderScan()};
     $("#mInt").onclick=()=>{SC.mode="int";renderScan()};
@@ -783,6 +813,7 @@ function renderScan(){
     $("#rvNext").onclick=()=>{let i=nextUnc(SC.sel,false);if(i<0)i=nextUnc(SC.sel,true);if(i<0){toast("Ingen usikre igjen");return}scrollToCell(i);openCell(i)};
     $("#rvAccept").onclick=()=>{let n=0;SC.cells.forEach(c=>{if(c.unc){c.unc=false;c.white=false;n++}});reviewChanged();toast(n?`Godtok ${n} perler slik appen leste dem`:"Ingen usikre igjen")};
     $("#rvAdjust").onclick=()=>{SC.step=2;renderScan()};
+    $("#rvColors").onclick=()=>{SC.step=3;renderScan()};
     $("#rvMore").onclick=()=>{const n=commitPlate();SC.step=1;SC.cells=null;renderScan();$("#scan").scrollTop=0;toast(`${nf.format(n)} perler lagt til. Klar for neste plate.`)};
     $("#rvDone").onclick=()=>{const n=commitPlate();closeOverlay("#scan");goTab("reg");toast(`${nf.format(n)} perler lagt til`)};
     reviewChanged();
@@ -841,7 +872,7 @@ function drawQuad(){
     ctx.beginPath();ctx.moveTo(lx-12,ly);ctx.lineTo(lx+12,ly);ctx.moveTo(lx,ly-12);ctx.lineTo(lx,ly+12);ctx.lineWidth=2;ctx.strokeStyle="#ff3b6b";ctx.stroke();
   }
 }
-function analyze(){
+function measure(){
   const d=SC.dims,H=sq2q(SC.q),den=(d.cols-1)+(d.off?.5:0),du=1/den,dv=1/(d.rows-1);
   /* Hvitbalanse fra den hvite platen, lokalt per område (ujevnt lys) */
   const lowC=c=>{const mx=Math.max(...c),mn=Math.min(...c);return mx>40&&(mx-mn)/mx<.18};
@@ -863,12 +894,7 @@ function analyze(){
   for(let i=0;i<40;i++){const t=i/40;for(const [u,v] of [[t,-.1],[t,1.1],[-.1,t],[1.1,t]]){const [x,y]=H(u,v);if(x>=0&&y>=0&&x<SC.W&&y<SC.H)bgs.push(normW(px(x,y),gw))}}
   let bgLab=null,bgWhite=true;
   if(bgs.length>8){bgLab=lab(...medColor(bgs));bgWhite=bgLab[0]>78&&Math.hypot(bgLab[1],bgLab[2])<15}
-  /* Palett: farger du har på lager får et lite forsprang, spesialfarger du ikke har får et lite handikap */
-  const [pb,ps]=S.scanPal.split("|"), special=/clear|transl|glitter|neon|fluor|glow|pearl|metal|cloudy|gold|silver/i;
-  const cand=ALL.filter(c=>c.brand===pb&&c.size===ps).map(c=>{const L=lab(...hexRgb(c.hex));
-    return {k:c.k,lab:L,w:L[0]>78&&Math.hypot(L[1],L[2])<16,f:count(c.k)>0?-3:special.test(c.name)?3:0}});
-  cand.push({k:"EMPTY",lab:lab(238,238,238),w:true,f:0});
-  const cells=[],angs=d.off?[30,90,150,210,270,330]:[45,135,225,315],rad=d.off?.58:.68;
+  const feat=[],angs=d.off?[30,90,150,210,270,330]:[45,135,225,315],rad=d.off?.58:.68;
   for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++){
     const [u,v]=cellUV(r,c,d),[x,y]=H(u,v),A=H(u+du,v),B=H(u,v+dv),wl=whiteAt(u,v),nm=q=>normW(q,wl);
     const p=(Math.hypot(A[0]-x,A[1]-y)+Math.hypot(B[0]-x,B[1]-y)/(d.off?.866:1))/2;
@@ -877,35 +903,67 @@ function analyze(){
     const col=medColor(smp),L=lab(...col);
     let br=0;
     for(const ag of angs){const t=ag*Math.PI/180,cc=nm(px5(x+Math.cos(t)*rad*p,y+Math.sin(t)*rad*p));if(lum(cc)>170&&Math.max(...cc)-Math.min(...cc)<45)br++}
-    const s=cand.map(q=>({k:q.k,w:q.w,d:Math.max(0,dE(L,q.lab)+q.f)})).sort((a,b)=>a.d-b.d);
-    let unc=s[0].d>22||s[1].d-s[0].d<5, white=unc&&s[0].w&&s[1].w;
-    let score=null;
-    if(s[0].w&&s[1].w){
-      /* Hvit perle eller tom pinne: en perle har skygge i hullet og langs kanten, en tom pinne er flat */
-      const rl=lum(col),cl=lum(nm(px5(x,y))),per=[];
-      for(let i=0;i<16;i++){const t=i*Math.PI/8;per.push(lum(nm(px(x+Math.cos(t)*.47*p,y+Math.sin(t)*.47*p))))}
-      score=(rl-med(per))+.3*Math.max(0,rl-cl);
-      unc=true;white=true;
-    }
-    cells.push({k:s[0].k,cands:s.slice(0,7),unc,white,sc:score,outLike:bgLab&&!bgWhite&&br<2&&dE(L,bgLab)<16});
+    /* Hvit perle eller tom pinne: en perle har skygge i hullet og langs kanten, en tom pinne er flat */
+    const rl=lum(col),cl=lum(nm(px5(x,y))),per=[];
+    for(let i=0;i<16;i++){const t=i*Math.PI/8;per.push(lum(nm(px(x+Math.cos(t)*.47*p,y+Math.sin(t)*.47*p))))}
+    feat.push({L,ws:(rl-med(per))+.3*Math.max(0,rl-cl),outLike:bgLab&&!bgWhite&&br<2&&dE(L,bgLab)<16,out:false});
   }
   /* Ruter utenfor platen: må henge sammen med kanten av rutenettet */
-  const N=cells.length,seen=new Uint8Array(N),st=[];
-  for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++)if(r===0||c===0||r===d.rows-1||c===d.cols-1){const i=r*d.cols+c;if(cells[i].outLike&&!seen[i]){seen[i]=1;st.push(i)}}
+  const N=feat.length,seen=new Uint8Array(N),st=[];
+  for(let r=0;r<d.rows;r++)for(let c=0;c<d.cols;c++)if(r===0||c===0||r===d.rows-1||c===d.cols-1){const i=r*d.cols+c;if(feat[i].outLike&&!seen[i]){seen[i]=1;st.push(i)}}
   while(st.length){const i=st.pop(),r=Math.floor(i/d.cols),c=i%d.cols;
-    for(const [rr,cc] of [[r-1,c],[r+1,c],[r,c-1],[r,c+1]]){if(rr<0||cc<0||rr>=d.rows||cc>=d.cols)continue;const j=rr*d.cols+cc;if(!seen[j]&&cells[j].outLike){seen[j]=1;st.push(j)}}}
-  cells.forEach((c,i)=>{if(seen[i]){c.k="OUT";c.unc=false;c.white=false}});
-  /* Hvit eller tom: del i to grupper per bilde hvis forskjellen er tydelig */
-  const wc=cells.filter(c=>c.white&&c.k!=="OUT"&&c.sc!=null);
-  if(wc.length>=6){
-    const v=wc.map(c=>c.sc).sort((a,b)=>a-b),n=v.length;let best=-1,bt=0;
-    for(let i=1;i<n;i++){const a=v.slice(0,i),b=v.slice(i),ma=a.reduce((s,x)=>s+x,0)/a.length,mb=b.reduce((s,x)=>s+x,0)/b.length,bv=a.length*b.length*(mb-ma)**2;if(bv>best){best=bv;bt=i}}
-    const lo=v.slice(0,bt),hi=v.slice(bt),m=x=>x.reduce((s,y)=>s+y,0)/x.length,sd=x=>{const mm=m(x);return Math.sqrt(x.reduce((s,y)=>s+(y-mm)**2,0)/x.length)};
-    if(lo.length&&hi.length){const m1=m(lo),m2=m(hi),sep=(m2-m1)/(Math.sqrt((sd(lo)**2+sd(hi)**2)/2)+1),t=(m1+m2)/2,marg=(m2-m1)*.22;
-      if(sep>2.5&&m2-m1>8) wc.forEach(c=>{if(Math.abs(c.sc-t)<marg)return;
-        if(c.sc<t){c.k="EMPTY"}else{const wb=c.cands.find(q=>q.w&&q.k!=="EMPTY");if(!wb)return;c.k=wb.k}
-        c.unc=false;c.white=false});}
+    for(const [rr,cc] of [[r-1,c],[r+1,c],[r,c-1],[r,c+1]]){if(rr<0||cc<0||rr>=d.rows||cc>=d.cols)continue;const j=rr*d.cols+cc;if(!seen[j]&&feat[j].outLike){seen[j]=1;st.push(j)}}}
+  feat.forEach((f,i)=>{f.out=!!seen[i]});
+  SC.feat=feat;
+}
+function split2(vals){ /* del verdier i to grupper; ok=true bare når skillet er tydelig */
+  const v=vals.slice().sort((a,b)=>a-b),n=v.length;if(n<6)return {ok:false};
+  const pre=[0];v.forEach(x=>pre.push(pre[pre.length-1]+x));let best=-1,bt=0;
+  for(let i=1;i<n;i++){const ma=pre[i]/i,mb=(pre[n]-pre[i])/(n-i),bv=i*(n-i)*(mb-ma)**2;if(bv>best){best=bv;bt=i}}
+  const lo=v.slice(0,bt),hi=v.slice(bt),m=x=>x.reduce((s,y)=>s+y,0)/x.length,sd=x=>{const mm=m(x);return Math.sqrt(x.reduce((s,y)=>s+(y-mm)**2,0)/x.length)};
+  const m1=m(lo),m2=m(hi),sep=(m2-m1)/(Math.sqrt((sd(lo)**2+sd(hi)**2)/2)+1);
+  return {ok:sep>2.5&&m2-m1>8,t:(m1+m2)/2,marg:(m2-m1)*.22,hi:hi.length};
+}
+const isWhiteLab=L=>L[0]>78&&Math.hypot(L[1],L[2])<16;
+const EMPTY_LAB=lab(238,238,238);
+/* Foreslå farger ut fra bildet, ved å sammenligne med hele fargekartet */
+function suggestColors(){
+  const [pb,ps]=S.scanPal.split("|"),special=/clear|transl|glitter|neon|fluor|glow|pearl|metal|cloudy|gold|silver/i;
+  const cand=ALL.filter(c=>c.brand===pb&&c.size===ps).map(c=>({k:c.k,lab:lab(...hexRgb(c.hex)),f:count(c.k)>0?-3:special.test(c.name)?3:0}));
+  cand.push({k:"EMPTY",lab:EMPTY_LAB,f:0});
+  const cnt={},wcnt={},wsv=[];let beads=0;
+  SC.feat.forEach(f=>{if(f.out)return;let bk=null,bd=1e9;for(const q of cand){const d=dE(f.L,q.lab)+q.f;if(d<bd){bd=d;bk=q.k}}
+    if(bk==="EMPTY"||isWhiteLab(lab(...hexRgb(BY[bk].hex)))){wsv.push(f.ws);if(bk!=="EMPTY")wcnt[bk]=(wcnt[bk]||0)+1;return}
+    cnt[bk]=(cnt[bk]||0)+1;beads++});
+  /* Hvite perler på hvit plate: bruk skyggen i hullet til å anslå om det finnes noen */
+  const wk=Object.keys(wcnt).sort((a,b)=>wcnt[b]-wcnt[a])[0]||(ALL.find(c=>c.brand===pb&&c.size===ps&&isWhiteLab(lab(...hexRgb(c.hex))))||{}).k;
+  const sp=split2(wsv);SC.whiteKey=wk;SC.whiteUnknown=false;
+  if(wk){if(sp.ok&&sp.hi>=2){cnt[wk]=sp.hi;beads+=sp.hi}else SC.whiteUnknown=true}
+  const order=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]),min=Math.max(2,Math.round(beads*.01)),strong=[],maybe=[];
+  const labOf=k=>lab(...hexRgb(BY[k].hex));
+  for(const k of order){
+    const near=strong.find(s=>dE(labOf(s),labOf(k))<9&&cnt[k]<cnt[s]*.35);
+    if(cnt[k]>=min&&!near)strong.push(k);else maybe.push(k);
   }
+  SC.est=cnt;SC.strong=strong;SC.maybe=maybe.slice(0,8);
+  if(SC.whiteUnknown&&wk&&!SC.maybe.includes(wk)&&!strong.includes(wk))SC.maybe.unshift(wk);
+}
+/* Les av med bare de valgte fargene */
+function classify(keys){
+  const cand=keys.filter(k=>BY[k]).map(k=>{const L=lab(...hexRgb(BY[k].hex));return {k,lab:L,w:isWhiteLab(L)}});
+  cand.push({k:"EMPTY",lab:EMPTY_LAB,w:true});
+  const cells=SC.feat.map(f=>{
+    if(f.out)return {k:"OUT",cands:[],unc:false,white:false,sc:null};
+    const s=cand.map(q=>({k:q.k,w:q.w,d:dE(f.L,q.lab)})).sort((a,b)=>a.d-b.d);
+    let unc=s[0].d>32||(s.length>1&&s[1].d-s[0].d<4),white=false,sc=null;
+    if(s.length>1&&s[0].w&&s[1].w){unc=true;white=true;sc=f.ws}
+    return {k:s[0].k,cands:s,unc,white,sc};
+  });
+  /* Hvit eller tom: del i to grupper per bilde hvis forskjellen er tydelig */
+  const wc=cells.filter(c=>c.white&&c.sc!=null),sp=split2(wc.map(c=>c.sc));
+  if(sp.ok) wc.forEach(c=>{if(Math.abs(c.sc-sp.t)<sp.marg)return;
+    if(c.sc<sp.t){c.k="EMPTY"}else{const wb=c.cands.find(q=>q.w&&q.k!=="EMPTY");if(!wb)return;c.k=wb.k}
+    c.unc=false;c.white=false});
   /* Usikre hvite står som tom plass inntil du velger noe annet */
   cells.forEach(c=>{if(c.white)c.k="EMPTY"});
   SC.cells=cells;
